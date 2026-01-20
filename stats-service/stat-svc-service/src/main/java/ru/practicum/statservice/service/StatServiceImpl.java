@@ -8,6 +8,7 @@ import ru.practicum.statservice.model.EndpointHit;
 import ru.practicum.statservice.repository.StatRepository;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -25,11 +26,14 @@ public class StatServiceImpl implements StatService {
         repository.save(hit);
     }
 
-    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris, boolean unique) {
+    public List<ViewStatsDto> getStats(String start, String end, List<String> uris, boolean unique) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        LocalDateTime startTime = LocalDateTime.parse(start, formatter);
+        LocalDateTime endTime = LocalDateTime.parse(end, formatter);
         if (unique) {
-            return repository.findUniqueHits(start, end, uris);
+            return repository.findUniqueHits(startTime, endTime, uris);
         } else {
-            return repository.findAllHits(start, end, uris);
+            return repository.findAllHits(startTime, endTime, uris);
         }
     }
 }

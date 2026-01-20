@@ -35,7 +35,7 @@ public class StatController {
     ) {
         log.info("Запрошена статистика: start={}, end={}, uris={}, unique={}",
                 start, end, uris, unique);
-        return List.of();
+        return statService.getStats(start, end, uris, unique);
     }
 }
 
