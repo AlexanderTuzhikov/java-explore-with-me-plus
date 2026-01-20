@@ -1,5 +1,6 @@
 services:
   stats-service:
+    container_name: stats-service
     build:
       context: ./stats-service/stat-svc-service
     ports:
@@ -7,6 +8,9 @@ services:
 
   stats-db:
     image: postgres:16.1
+    container_name: stats-db
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_USER: stats
       POSTGRES_PASSWORD: 12345
@@ -19,6 +23,7 @@ services:
 
 
   ewm-service:
+    container_name: ewm-service
     build:
       context: ./ewm-service
     ports:
@@ -26,6 +31,9 @@ services:
 
   ewm-db:
     image: postgres:16.1
+    container_name: ewm-db
+    ports:
+      - "5433:5432"
     environment:
       POSTGRES_USER: ewm
       POSTGRES_PASSWORD: 12345
