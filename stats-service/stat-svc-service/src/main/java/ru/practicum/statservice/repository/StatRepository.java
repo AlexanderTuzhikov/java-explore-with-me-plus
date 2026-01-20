@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface StatRepository extends JpaRepository<EndpointHit, Long> {
-    List<EndpointHit> findAllByTimestampBetween(LocalDateTime start, LocalDateTime end);
-
     @Query("SELECT new ru.practicum.dto.ViewStatsDto(h.app, h.uri, COUNT(DISTINCT h.ip)) " +
             "FROM EndpointHit h " +
             "WHERE h.timestamp BETWEEN :start AND :end " +
