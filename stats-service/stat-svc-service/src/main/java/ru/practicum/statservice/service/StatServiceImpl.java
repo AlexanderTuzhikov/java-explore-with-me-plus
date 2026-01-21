@@ -1,6 +1,6 @@
 package ru.practicum.statservice.service;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Transactional(readOnly = true)
 public class StatServiceImpl implements StatService {
     private final StatRepository repository;
@@ -25,6 +25,7 @@ public class StatServiceImpl implements StatService {
     @Override
     @Transactional
     public void saveHit(NewEndpointHitDto hitDto) {
+        // Используем правильные геттеры
         log.info("Получен HIT: app={}, uri={}, ip={}, timestamp={}",
                 hitDto.getApp(), hitDto.getUri(), hitDto.getIp(), hitDto.getTimestamp());
 

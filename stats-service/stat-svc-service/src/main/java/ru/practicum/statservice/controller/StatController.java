@@ -1,7 +1,6 @@
 package ru.practicum.statservice.controller;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -14,10 +13,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping
-@RequiredArgsConstructor
 @Validated
-public class StatController {
+public class StatController {  // Убираем @RequiredArgsConstructor, делаем явный конструктор
     private final StatService statService;
+
+    // Явный конструктор вместо @RequiredArgsConstructor
+    public StatController(StatService statService) {
+        this.statService = statService;
+    }
 
     @PostMapping("/hit")
     public ResponseEntity<Void> hit(@Valid @RequestBody NewEndpointHitDto hitDto) {
@@ -34,5 +37,15 @@ public class StatController {
     ) {
         return ResponseEntity.ok().body(statService.getStats(start, end, uris, unique));
     }
-}
 
+    // Добавляем эндпоинты для health check
+    @GetMapping("/health")
+    public ResponseEntity<String> health() {
+        return ResponseEntity.ok("Stats Service OK");
+    }
+
+    @GetMapping("/ping")
+    public ResponseEntity<String> ping() {
+        return ResponseEntity.ok("pong");
+    }
+}

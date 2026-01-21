@@ -10,7 +10,6 @@
     </parent>
 
     <artifactId>stats-service</artifactId>
-
     <packaging>pom</packaging>
 
     <modules>
@@ -23,5 +22,19 @@
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <!-- Добавить свойства для Lombok -->
+        <lombok.version>1.18.30</lombok.version>
     </properties>
+
+    <!-- Добавить dependencyManagement для общих зависимостей -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>
