@@ -3,16 +3,18 @@ package ru.practicum.statsclient;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.client.RestClientException;
 import ru.practicum.dto.NewEndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 
 @Slf4j
@@ -20,67 +22,103 @@ import java.util.List;
 public class StatsClient {
     private final RestClient restClient;
     private final String serverUrl;
-    
+
     private static final String HIT_ENDPOINT = "/hit";
     private static final String STATS_ENDPOINT = "/stats";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    private static final List<ViewStatsDto> EMPTY_STATS = Collections.emptyList();
 
     public StatsClient(@Value("${stats-service.url:http://localhost:9090}") String serverUrl) {
         this.serverUrl = serverUrl;
         this.restClient = RestClient.builder()
                 .baseUrl(serverUrl)
                 .defaultStatusHandler(
-                        httpStatusCode -> httpStatusCode.isError(),
+                        HttpStatusCode::is4xxClientError,
                         (request, response) -> {
                             throw new StatsClientException(
-                                    "HTTP error " + response.getStatusCode() + 
-                                    " from " + request.getURI()
+                                    "Client error: " + response.getStatusCode() +
+                                            " - " + request.getURI()
+                            );
+                        }
+                )
+                .defaultStatusHandler(
+                        HttpStatusCode::is5xxServerError,
+                        (request, response) -> {
+                            throw new StatsClientException(
+                                    "Server error: " + response.getStatusCode() +
+                                            " - " + request.getURI()
                             );
                         }
                 )
                 .build();
-        log.info("StatsClient ready for: {}", serverUrl);
+        log.info("StatsClient initialized for: {}", serverUrl);
     }
 
-    public void saveHit(NewEndpointHitDto hitDto) {
-        log.debug("Sending hit: {}", hitDto);
-        
+    /**
+     * Сохраняет информацию о посещении.
+     * Возвращает ResponseEntity<Void> со статусом 201 от сервера.
+     */
+    public ResponseEntity<Void> saveHit(NewEndpointHitDto hitDto) {
+        log.debug("Sending hit to stats-service: {}", hitDto);
+
         try {
-            restClient.post()
+            return restClient.post()
                     .uri(HIT_ENDPOINT)
                     .contentType(MediaType.APPLICATION_JSON)
                     .body(hitDto)
                     .retrieve()
                     .toBodilessEntity();
-        } catch (RestClientException e) {
+        } catch (Exception e) {
             throw new StatsClientException("Failed to save hit: " + e.getMessage(), e);
         }
     }
 
-    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, 
-                                      List<String> uris, boolean unique) {
+    /**
+     * Получает статистику посещений.
+     * Параметры даты кодируются согласно спецификации.
+     */
+    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end,
+                                       List<String> uris, boolean unique) {
+        log.debug("Getting stats: {} to {}, uris: {}, unique: {}", start, end, uris, unique);
+
         try {
             return restClient.get()
                     .uri(uriBuilder -> {
+                        // Кодируем даты как указано в спецификации
+                        String encodedStart = URLEncoder.encode(
+                                start.format(FORMATTER),
+                                StandardCharsets.UTF_8
+                        );
+                        String encodedEnd = URLEncoder.encode(
+                                end.format(FORMATTER),
+                                StandardCharsets.UTF_8
+                        );
+
                         uriBuilder.path(STATS_ENDPOINT)
-                                .queryParam("start", start.format(FORMATTER))
-                                .queryParam("end", end.format(FORMATTER))
+                                .queryParam("start", encodedStart)
+                                .queryParam("end", encodedEnd)
                                 .queryParam("unique", unique);
-                        
+
                         if (uris != null && !uris.isEmpty()) {
-                            uriBuilder.queryParam("uris", String.join(",", uris));
+                            // URI тоже кодируем
+                            String encodedUris = URLEncoder.encode(
+                                    String.join(",", uris),
+                                    StandardCharsets.UTF_8
+                            );
+                            uriBuilder.queryParam("uris", encodedUris);
                         }
-                        
+
                         return uriBuilder.build();
                     })
                     .retrieve()
                     .body(new ParameterizedTypeReference<>() {});
-        } catch (RestClientException e) {
+        } catch (Exception e) {
             throw new StatsClientException("Failed to get stats: " + e.getMessage(), e);
         }
     }
 
+    /**
+     * Получает статистику посещений без фильтрации по URI.
+     */
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, boolean unique) {
         return getStats(start, end, null, unique);
     }
