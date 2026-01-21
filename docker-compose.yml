@@ -3,7 +3,7 @@ version: '3.8'
 services:
   stats-server:
     build:
-      context: ./stats-service
+      context: ./stat-svc-service
       dockerfile: Dockerfile
     container_name: stats-server
     ports:
@@ -30,6 +30,18 @@ services:
     command: ["sleep", "infinity"]
     ports:
       - "8080:8080"
+
+  stats-client:
+    build:
+      context: ./stat-svc-client
+      dockerfile: Dockerfile
+    container_name: stats-client
+    ports:
+      - "8081:8081"
+    environment:
+      STATS_SERVICE_URL: http://stats-server:9090
+    depends_on:
+      - stats-server
 
   ewm-db:
     image: postgres:16.1

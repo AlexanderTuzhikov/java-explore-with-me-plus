@@ -53,10 +53,6 @@ public class StatsClient {
         log.info("StatsClient initialized for: {}", serverUrl);
     }
 
-    /**
-     * Сохраняет информацию о посещении.
-     * Возвращает ResponseEntity<Void> со статусом 201 от сервера.
-     */
     public ResponseEntity<Void> saveHit(NewEndpointHitDto hitDto) {
         log.debug("Sending hit to stats-service: {}", hitDto);
 
@@ -72,10 +68,6 @@ public class StatsClient {
         }
     }
 
-    /**
-     * Получает статистику посещений.
-     * Параметры даты кодируются согласно спецификации.
-     */
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end,
                                        List<String> uris, boolean unique) {
         log.debug("Getting stats: {} to {}, uris: {}, unique: {}", start, end, uris, unique);
@@ -83,7 +75,6 @@ public class StatsClient {
         try {
             return restClient.get()
                     .uri(uriBuilder -> {
-                        // Кодируем даты как указано в спецификации
                         String encodedStart = URLEncoder.encode(
                                 start.format(FORMATTER),
                                 StandardCharsets.UTF_8
@@ -99,7 +90,6 @@ public class StatsClient {
                                 .queryParam("unique", unique);
 
                         if (uris != null && !uris.isEmpty()) {
-                            // URI тоже кодируем
                             String encodedUris = URLEncoder.encode(
                                     String.join(",", uris),
                                     StandardCharsets.UTF_8
@@ -116,9 +106,6 @@ public class StatsClient {
         }
     }
 
-    /**
-     * Получает статистику посещений без фильтрации по URI.
-     */
     public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, boolean unique) {
         return getStats(start, end, null, unique);
     }
