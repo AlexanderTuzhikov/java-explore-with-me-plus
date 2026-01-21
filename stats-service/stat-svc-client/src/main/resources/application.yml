@@ -1,2 +1,26 @@
+server:
+  port: 8081  # Порт для stats-client service
+
+spring:
+  application:
+    name: stats-client-service
+
+  # Если нужно подключение к БД для кэширования и т.д.
+  datasource:
+    url: jdbc:h2:mem:statsclientdb
+    username: sa
+    password:
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+
 stats-service:
   url: http://localhost:9090
+  connection-timeout: 2000
+  read-timeout: 5000
+
+logging:
+  level:
+    ru.practicum.statsclient: INFO
+    org.springframework.web: WARN
