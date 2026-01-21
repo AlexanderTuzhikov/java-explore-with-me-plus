@@ -3,7 +3,7 @@ version: '3.8'
 services:
   stats-server:
     build:
-      context: ./stat-svc-service
+      context: ./stats-service/stat-svc-service
       dockerfile: Dockerfile
     container_name: stats-server
     ports:
@@ -33,7 +33,7 @@ services:
 
   stats-client:
     build:
-      context: ./stat-svc-client
+      context: ./stats-service/stat-svc-client
       dockerfile: Dockerfile
     container_name: stats-client
     ports:
