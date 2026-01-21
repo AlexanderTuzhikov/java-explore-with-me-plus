@@ -22,6 +22,7 @@ public class StatServiceImpl implements StatService {
     private final StatRepository repository;
     private final EndpointHitMapper endpointHitMapper;
 
+    // Ручной конструктор
     public StatServiceImpl(StatRepository repository, EndpointHitMapper endpointHitMapper) {
         this.repository = repository;
         this.endpointHitMapper = endpointHitMapper;
@@ -30,11 +31,20 @@ public class StatServiceImpl implements StatService {
     @Override
     @Transactional
     public void saveHit(NewEndpointHitDto hitDto) {
-        log.info("Получен HIT: app={}, uri={}, ip={}, timestamp={}",
-                hitDto.getApp(), hitDto.getUri(), hitDto.getIp(), hitDto.getTimestamp());
+        try {
+            log.info("Сохранение hit: app={}, uri={}, ip={}, timestamp={}",
+                    hitDto.getApp(), hitDto.getUri(), hitDto.getIp(), hitDto.getTimestamp());
 
-        EndpointHit hit = endpointHitMapper.mapToEndpointHit(hitDto);
-        repository.save(hit);
+            EndpointHit hit = endpointHitMapper.mapToEndpointHit(hitDto);
+            log.info("Создана entity: {}", hit);
+
+            EndpointHit saved = repository.save(hit);
+            log.info("Сохранено в БД с id={}", saved.getId());
+
+        } catch (Exception e) {
+            log.error("Ошибка при сохранении hit: ", e);
+            throw new RuntimeException("Ошибка сохранения статистики", e);
+        }
     }
 
     @Override
@@ -42,14 +52,19 @@ public class StatServiceImpl implements StatService {
         log.info("Запрошена статистика: start={}, end={}, uris={}, unique={}",
                 start, end, uris, unique);
 
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        LocalDateTime startTime = LocalDateTime.parse(start, formatter);
-        LocalDateTime endTime = LocalDateTime.parse(end, formatter);
+        try {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            LocalDateTime startTime = LocalDateTime.parse(start, formatter);
+            LocalDateTime endTime = LocalDateTime.parse(end, formatter);
 
-        if (unique) {
-            return repository.findUniqueHits(startTime, endTime, uris);
-        } else {
-            return repository.findAllHits(startTime, endTime, uris);
+            if (unique) {
+                return repository.findUniqueHits(startTime, endTime, uris);
+            } else {
+                return repository.findAllHits(startTime, endTime, uris);
+            }
+        } catch (Exception e) {
+            log.error("Ошибка при получении статистики: ", e);
+            throw new RuntimeException("Ошибка получения статистики", e);
         }
     }
 }
