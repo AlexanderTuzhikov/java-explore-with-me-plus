@@ -1,0 +1,6 @@
+stats-service:
+  url: http://localhost:9090
+
+logging:
+  level:
+    ru.practicum.statsclient: INFO
