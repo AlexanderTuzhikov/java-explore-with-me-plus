@@ -1,6 +1,5 @@
 package ru.practicum.client;
 
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
 import ru.practicum.dto.NewEndpointHitDto;
