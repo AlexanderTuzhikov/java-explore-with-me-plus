@@ -25,12 +25,12 @@ import java.util.List;
 public class StatsClient {
     private final RestTemplate restTemplate;
     private final String serverUrl;
-    
+
     private static final String HIT_ENDPOINT = "/hit";
     private static final String STATS_ENDPOINT = "/stats";
     private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
-    public StatsClient(@Value("${stats-service.url:http://localhost:9090}") String serverUrl, 
+    public StatsClient(@Value("${stats-service.url:http://localhost:9090}") String serverUrl,
                       RestTemplateBuilder builder) {
         this.serverUrl = serverUrl;
         this.restTemplate = builder.build();
@@ -42,17 +42,17 @@ public class StatsClient {
      */
     public void saveHit(NewEndpointHitDto hitDto) {
         validateHitDto(hitDto);
-        
-        log.debug("Saving hit: app={}, uri={}, ip={}", 
+
+        log.debug("Saving hit: app={}, uri={}, ip={}",
                  hitDto.getApp(), hitDto.getUri(), hitDto.getIp());
-        
+
         try {
             ResponseEntity<Object> response = restTemplate.postForEntity(
-                    serverUrl + HIT_ENDPOINT, 
-                    hitDto, 
+                    serverUrl + HIT_ENDPOINT,
+                    hitDto,
                     Object.class
             );
-            
+
             if (response.getStatusCode().is2xxSuccessful()) {
                 log.debug("Hit successfully saved");
             } else {
@@ -70,10 +70,10 @@ public class StatsClient {
     /**
      * Получает статистику посещений.
      */
-    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, 
+    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end,
                                       List<String> uris, boolean unique) {
         validateTimeRange(start, end);
-        
+
         UriComponentsBuilder builder = UriComponentsBuilder
                 .fromHttpUrl(serverUrl + STATS_ENDPOINT)
                 .queryParam("start", start.format(FORMATTER))
@@ -89,10 +89,10 @@ public class StatsClient {
 
         try {
             ResponseEntity<ViewStatsDto[]> response = restTemplate.getForEntity(
-                    url, 
+                    url,
                     ViewStatsDto[].class
             );
-            
+
             if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
                 List<ViewStatsDto> stats = Arrays.asList(response.getBody());
                 log.debug("Received {} stats records", stats.size());
