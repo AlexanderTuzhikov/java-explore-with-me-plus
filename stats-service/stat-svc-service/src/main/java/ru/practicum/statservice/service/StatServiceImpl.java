@@ -35,12 +35,14 @@ public class StatServiceImpl implements StatService {
             log.info("Сохранение hit: app={}, uri={}, ip={}, timestamp={}",
                     hitDto.getApp(), hitDto.getUri(), hitDto.getIp(), hitDto.getTimestamp());
 
-            // Добавим дебаг логи
-            log.debug("DTO получен: {}", hitDto);
+            // Простой маппинг без Mapstruct
+            EndpointHit hit = new EndpointHit();
+            hit.setApp(hitDto.getApp());
+            hit.setUri(hitDto.getUri());
+            hit.setIp(hitDto.getIp());
+            hit.setTimestamp(hitDto.getTimestamp());
 
-            EndpointHit hit = endpointHitMapper.mapToEndpointHit(hitDto);
-            log.debug("Entity создана: app={}, uri={}, ip={}, timestamp={}",
-                    hit.getApp(), hit.getUri(), hit.getIp(), hit.getTimestamp());
+            log.debug("Entity создана: {}", hit);
 
             EndpointHit saved = repository.save(hit);
             log.info("Успешно сохранено в БД с id={}", saved.getId());
