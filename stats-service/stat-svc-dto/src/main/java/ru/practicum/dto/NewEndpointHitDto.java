@@ -20,6 +20,7 @@ public class NewEndpointHitDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime timestamp;
 
+    // Конструктор
     public NewEndpointHitDto(String app, String uri, String ip, LocalDateTime timestamp) {
         this.app = app;
         this.uri = uri;
@@ -27,6 +28,7 @@ public class NewEndpointHitDto {
         this.timestamp = timestamp;
     }
 
+    // Пустой конструктор
     public NewEndpointHitDto() {
     }
 

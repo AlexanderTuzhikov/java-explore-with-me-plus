@@ -22,7 +22,7 @@ public class StatServiceImpl implements StatService {
     private final StatRepository repository;
     private final EndpointHitMapper endpointHitMapper;
 
-    // Ручной конструктор
+    // Конструктор
     public StatServiceImpl(StatRepository repository, EndpointHitMapper endpointHitMapper) {
         this.repository = repository;
         this.endpointHitMapper = endpointHitMapper;
@@ -35,14 +35,18 @@ public class StatServiceImpl implements StatService {
             log.info("Сохранение hit: app={}, uri={}, ip={}, timestamp={}",
                     hitDto.getApp(), hitDto.getUri(), hitDto.getIp(), hitDto.getTimestamp());
 
+            // Добавим дебаг логи
+            log.debug("DTO получен: {}", hitDto);
+
             EndpointHit hit = endpointHitMapper.mapToEndpointHit(hitDto);
-            log.info("Создана entity: {}", hit);
+            log.debug("Entity создана: app={}, uri={}, ip={}, timestamp={}",
+                    hit.getApp(), hit.getUri(), hit.getIp(), hit.getTimestamp());
 
             EndpointHit saved = repository.save(hit);
-            log.info("Сохранено в БД с id={}", saved.getId());
+            log.info("Успешно сохранено в БД с id={}", saved.getId());
 
         } catch (Exception e) {
-            log.error("Ошибка при сохранении hit: ", e);
+            log.error("Ошибка при сохранении hit в БД: ", e);
             throw new RuntimeException("Ошибка сохранения статистики", e);
         }
     }
