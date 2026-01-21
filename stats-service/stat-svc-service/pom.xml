@@ -64,6 +64,9 @@
     </properties>
 
     <build>
+
+        <finalName>stats-service-app</finalName>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
