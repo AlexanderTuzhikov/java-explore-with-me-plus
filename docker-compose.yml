@@ -1,19 +1,6 @@
 version: '3.8'
 
 services:
-  stats-server:
-    build:
-      context: ./stats-service/stat-svc-service
-      dockerfile: Dockerfile
-    container_name: stats-server
-    ports:
-      - "9090:9090"
-    healthcheck:
-      test: ["CMD", "nc", "-z", "localhost", "9090"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-
   stats-db:
     image: postgres:16.1
     container_name: stats-db
@@ -23,13 +10,30 @@ services:
       POSTGRES_USER: stats
       POSTGRES_PASSWORD: 12345
       POSTGRES_DB: stats
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U stats"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-  ewm-service:
-    image: alpine:latest
-    container_name: ewm-service
-    command: ["sleep", "infinity"]
+  stats-server:
+    build:
+      context: ./stats-service/stat-svc-service
+      dockerfile: Dockerfile
+    container_name: stats-server
     ports:
-      - "8080:8080"
+      - "9090:9090"
+    depends_on:
+      stats-db:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:postgresql://stats-db:5432/stats
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   stats-client:
     build:
@@ -41,7 +45,8 @@ services:
     environment:
       STATS_SERVICE_URL: http://stats-server:9090
     depends_on:
-      - stats-server
+      stats-server:
+        condition: service_healthy
 
   ewm-db:
     image: postgres:16.1
@@ -52,3 +57,10 @@ services:
       POSTGRES_USER: ewm
       POSTGRES_PASSWORD: 12345
       POSTGRES_DB: ewm
+
+  ewm-service:
+    image: alpine:latest
+    container_name: ewm-service
+    command: ["sleep", "infinity"]
+    ports:
+      - "8080:8080"

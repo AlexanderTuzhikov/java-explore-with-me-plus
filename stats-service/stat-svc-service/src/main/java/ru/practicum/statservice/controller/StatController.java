@@ -38,6 +38,11 @@ public class StatController {  // Убираем @RequiredArgsConstructor, де�
         return ResponseEntity.ok().body(statService.getStats(start, end, uris, unique));
     }
 
+    @GetMapping("/")
+    public ResponseEntity<String> root() {
+        return ResponseEntity.ok("Stats Service is running");
+    }
+
     // Добавляем эндпоинты для health check
     @GetMapping("/health")
     public ResponseEntity<String> health() {
