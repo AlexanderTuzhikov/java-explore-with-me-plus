@@ -1,8 +1,10 @@
+version: '3.8'
+
 services:
   stats-server:
+    image: eclipse-temurin:21-jre-alpine
     container_name: stats-server
-    build:
-      context: ./stats-service
+    command: ["sleep", "3600"]
     ports:
       - "9090:9090"
 
@@ -15,16 +17,11 @@ services:
       POSTGRES_USER: stats
       POSTGRES_PASSWORD: 12345
       POSTGRES_DB: stats
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
 
   ewm-service:
+    image: eclipse-temurin:21-jre-alpine
     container_name: ewm-service
-    build:
-      context: ./ewm-service
+    command: ["sleep", "3600"]
     ports:
       - "8080:8080"
 
@@ -37,8 +34,3 @@ services:
       POSTGRES_USER: ewm
       POSTGRES_PASSWORD: 12345
       POSTGRES_DB: ewm
-    healthcheck:
-      test: pg_isready -q -d $$POSTGRES_DB -U $$POSTGRES_USER
-      timeout: 5s
-      interval: 5s
-      retries: 10
