@@ -1,12 +1,2 @@
 stats-service:
   url: http://localhost:9090
-  fallback-enabled: true
-  connection-timeout: 2000
-  read-timeout: 5000
-  max-retries: 3
-  retry-delay: 1000
-
-logging:
-  level:
-    ru.practicum.statsclient: INFO
-    org.springframework.web.client: WARN
