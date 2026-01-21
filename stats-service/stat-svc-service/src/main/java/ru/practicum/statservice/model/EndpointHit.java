@@ -8,18 +8,19 @@ import java.time.LocalDateTime;
 public class EndpointHit {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "ID")
     private Long id;
 
-    @Column(name = "app", nullable = false)
+    @Column(name = "APP", nullable = false)
     private String app;
 
-    @Column(name = "uri", nullable = false, length = 2048)
+    @Column(name = "URI", nullable = false, length = 2048)
     private String uri;
 
-    @Column(name = "ip", nullable = false, length = 45)
+    @Column(name = "IP", nullable = false, length = 45)
     private String ip;
 
-    @Column(name = "timestamp", nullable = false)
+    @Column(name = "TIMESTAMP", nullable = false)
     private LocalDateTime timestamp;
 
     public EndpointHit() {
@@ -33,19 +34,43 @@ public class EndpointHit {
         this.timestamp = timestamp;
     }
 
-    // Геттеры и сеттеры
-    public Long getId() { return id; }
-    public void setId(Long id) { this.id = id; }
+    public Long getId() {
+        return id;
+    }
 
-    public String getApp() { return app; }
-    public void setApp(String app) { this.app = app; }
+    public void setId(Long id) {
+        this.id = id;
+    }
 
-    public String getUri() { return uri; }
-    public void setUri(String uri) { this.uri = uri; }
+    public String getApp() {
+        return app;
+    }
 
-    public String getIp() { return ip; }
-    public void setIp(String ip) { this.ip = ip; }
+    public void setApp(String app) {
+        this.app = app;
+    }
 
-    public LocalDateTime getTimestamp() { return timestamp; }
-    public void setTimestamp(LocalDateTime timestamp) { this.timestamp = timestamp; }
+    public String getUri() {
+        return uri;
+    }
+
+    public void setUri(String uri) {
+        this.uri = uri;
+    }
+
+    public String getIp() {
+        return ip;
+    }
+
+    public void setIp(String ip) {
+        this.ip = ip;
+    }
+
+    public LocalDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(LocalDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
 }
