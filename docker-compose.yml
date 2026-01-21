@@ -2,11 +2,17 @@ version: '3.8'
 
 services:
   stats-server:
-    image: eclipse-temurin:21-jre-alpine
+    build:
+      context: ./stats-service
+      dockerfile: Dockerfile
     container_name: stats-server
-    command: ["sleep", "3600"]
     ports:
       - "9090:9090"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "9090"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
   stats-db:
     image: postgres:16.1
@@ -19,9 +25,9 @@ services:
       POSTGRES_DB: stats
 
   ewm-service:
-    image: eclipse-temurin:21-jre-alpine
+    image: alpine:latest
     container_name: ewm-service
-    command: ["sleep", "3600"]
+    command: ["sleep", "infinity"]
     ports:
       - "8080:8080"
 
