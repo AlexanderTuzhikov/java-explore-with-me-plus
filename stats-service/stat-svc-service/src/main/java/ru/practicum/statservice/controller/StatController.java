@@ -1,7 +1,6 @@
 package ru.practicum.statservice.controller;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,9 +12,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping
-@RequiredArgsConstructor
 public class StatController {
     private final StatService statService;
+
+    public StatController(StatService statService) {
+        this.statService = statService;
+    }
 
     @PostMapping("/hit")
     public ResponseEntity<Void> hit(@Valid @RequestBody NewEndpointHitDto hitDto) {
@@ -33,4 +35,3 @@ public class StatController {
         return ResponseEntity.ok().body(statService.getStats(start, end, uris, unique));
     }
 }
-

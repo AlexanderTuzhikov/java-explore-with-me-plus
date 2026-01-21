@@ -1,7 +1,7 @@
 package ru.practicum.statservice.service;
 
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.NewEndpointHitDto;
@@ -14,13 +14,18 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-@Slf4j
 @Service
-@AllArgsConstructor
 @Transactional(readOnly = true)
 public class StatServiceImpl implements StatService {
+    private static final Logger log = LoggerFactory.getLogger(StatServiceImpl.class);
+
     private final StatRepository repository;
     private final EndpointHitMapper endpointHitMapper;
+
+    public StatServiceImpl(StatRepository repository, EndpointHitMapper endpointHitMapper) {
+        this.repository = repository;
+        this.endpointHitMapper = endpointHitMapper;
+    }
 
     @Override
     @Transactional
@@ -48,5 +53,3 @@ public class StatServiceImpl implements StatService {
         }
     }
 }
-
-
