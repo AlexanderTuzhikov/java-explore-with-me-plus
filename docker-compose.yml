@@ -2,7 +2,7 @@ services:
   stats-service:
     container_name: stats-service
     build:
-      context: ./stats-service/stat-svc-service
+      context: ./stats-service
     ports:
       - "9090:9090"
 
@@ -20,7 +20,6 @@ services:
       timeout: 5s
       interval: 5s
       retries: 10
-
 
   ewm-service:
     container_name: ewm-service
