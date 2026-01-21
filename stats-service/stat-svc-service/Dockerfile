@@ -1,12 +1,11 @@
-FROM alpine:latest
-RUN apk add --no-cache netcat-openbsd
-RUN mkdir -p /app
+FROM maven:3.9-eclipse-temurin-21 AS builder
 WORKDIR /app
-RUN echo '#!/bin/sh' > health-server.sh && \
-    echo 'echo "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n{\"status\":\"UP\"}" > /tmp/response' >> health-server.sh && \
-    echo 'while true; do' >> health-server.sh && \
-    echo '  cat /tmp/response | nc -l -p 9090' >> health-server.sh && \
-    echo 'done' >> health-server.sh && \
-    chmod +x health-server.sh
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
+
+FROM eclipse-temurin:21-jre-alpine
+WORKDIR /app
+COPY --from=builder /app/target/*.jar app.jar
 EXPOSE 9090
-CMD ["/app/health-server.sh"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
