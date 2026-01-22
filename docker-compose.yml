@@ -5,6 +5,11 @@ services:
       context: ./stats-service/stat-svc-service
     ports:
       - "9090:9090"
+    depends_on:
+      stats-db:
+        condition: service_healthy
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
 
   stats-db:
     image: postgres:16.1

@@ -5,9 +5,3 @@ spring.datasource.password=12345
 
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.properties.hibernate.format_sql=true
-spring.sql.init.mode=always
-
-management.endpoints.web.exposure.include=health,info,metrics
-management.endpoint.health.show-details=always
-
-server.port=9090
