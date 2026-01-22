@@ -1,9 +1,17 @@
 package ru.practicum.statservice.model;
 
 import jakarta.persistence.*;
+import lombok.*;
+
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
+@NoArgsConstructor
 @Table(name = "endpoint_hits")
 public class EndpointHit {
     @Id
@@ -23,54 +31,15 @@ public class EndpointHit {
     @Column(name = "TIMESTAMP", nullable = false)
     private LocalDateTime timestamp;
 
-    public EndpointHit() {
+    @Override
+    public boolean equals(Object object) {
+        if (object == null || getClass() != object.getClass()) return false;
+        EndpointHit endpointHit = (EndpointHit) object;
+        return id != 0 && id.equals(endpointHit.id);
     }
 
-    public EndpointHit(Long id, String app, String uri, String ip, LocalDateTime timestamp) {
-        this.id = id;
-        this.app = app;
-        this.uri = uri;
-        this.ip = ip;
-        this.timestamp = timestamp;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getApp() {
-        return app;
-    }
-
-    public void setApp(String app) {
-        this.app = app;
-    }
-
-    public String getUri() {
-        return uri;
-    }
-
-    public void setUri(String uri) {
-        this.uri = uri;
-    }
-
-    public String getIp() {
-        return ip;
-    }
-
-    public void setIp(String ip) {
-        this.ip = ip;
-    }
-
-    public LocalDateTime getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(LocalDateTime timestamp) {
-        this.timestamp = timestamp;
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id);
     }
 }

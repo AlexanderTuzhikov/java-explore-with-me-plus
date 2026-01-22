@@ -1,10 +1,12 @@
 package ru.practicum.statservice.service;
 
+import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.NewEndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
+import ru.practicum.statservice.mapper.EndpointHitMapper;
 import ru.practicum.statservice.model.EndpointHit;
 import ru.practicum.statservice.repository.StatRepository;
 
@@ -15,13 +17,10 @@ import java.util.List;
 @Slf4j
 @Service
 @Transactional(readOnly = true)
+@AllArgsConstructor
 public class StatServiceImpl implements StatService {
-
     private final StatRepository repository;
-
-    public StatServiceImpl(StatRepository repository) {
-        this.repository = repository;
-    }
+    private final EndpointHitMapper mapper;
 
     @Override
     @Transactional
@@ -29,14 +28,10 @@ public class StatServiceImpl implements StatService {
         try {
             log.info("Saving hit: {}", hitDto);
 
-            EndpointHit hit = new EndpointHit();
-            hit.setApp(hitDto.getApp());
-            hit.setUri(hitDto.getUri());
-            hit.setIp(hitDto.getIp());
-            hit.setTimestamp(hitDto.getTimestamp());
+            EndpointHit hit = mapper.mapToEndpointHit(hitDto);
+            EndpointHit savedHit = repository.save(hit);
 
-            repository.save(hit);
-            log.info("Hit saved successfully");
+            log.info("Hit saved successfully: {}", savedHit);
 
         } catch (Exception e) {
             log.error("Failed to save hit: {}", e.getMessage(), e);
@@ -49,11 +44,20 @@ public class StatServiceImpl implements StatService {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
         LocalDateTime startTime = LocalDateTime.parse(start, formatter);
         LocalDateTime endTime = LocalDateTime.parse(end, formatter);
+        List<ViewStatsDto> stats;
 
         if (unique) {
-            return repository.findUniqueHits(startTime, endTime, uris);
+            stats = repository.findUniqueHits(startTime, endTime, uris);
         } else {
-            return repository.findAllHits(startTime, endTime, uris);
+            stats = repository.findAllHits(startTime, endTime, uris);
         }
+
+        if (stats.isEmpty()) {
+            for (String uri : uris) {
+                stats.add(new ViewStatsDto(null, uri, 0L));
+            }
+        }
+
+        return stats;
     }
 }
