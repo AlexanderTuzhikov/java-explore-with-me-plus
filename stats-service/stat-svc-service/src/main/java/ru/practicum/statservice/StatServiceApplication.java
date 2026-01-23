@@ -7,7 +7,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class StatServiceApplication {
     public static void main(String[] args) {
         SpringApplication.run(StatServiceApplication.class, args);
-        System.out.println("Сервис статистики запущен");
+        System.out.println("STAT-SERVICE RUNNING");
     }
 }
 
