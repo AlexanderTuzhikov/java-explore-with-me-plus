@@ -52,12 +52,6 @@ public class StatServiceImpl implements StatService {
             stats = repository.findAllHits(startTime, endTime, uris);
         }
 
-        if (stats.isEmpty()) {
-            for (String uri : uris) {
-                stats.add(new ViewStatsDto(null, uri, 0L));
-            }
-        }
-
         return stats;
     }
 }
