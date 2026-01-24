@@ -2,7 +2,6 @@ package ru.practicum.statservice.controller;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotEmpty;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -38,7 +37,7 @@ public class StatController {
     public ResponseEntity<List<ViewStatsDto>> getStats(
             @NotBlank @RequestParam String start,
             @NotBlank @RequestParam String end,
-            @NotEmpty @RequestParam(required = false) List<String> uris,
+            @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique) throws BadRequestException {
 
         validateDateRangeParams(start, end);
