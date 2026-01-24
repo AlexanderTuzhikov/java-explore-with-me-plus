@@ -38,7 +38,7 @@ public class StatController {
     public ResponseEntity<List<ViewStatsDto>> getStats(
             @NotBlank @RequestParam String start,
             @NotBlank @RequestParam String end,
-            @NotEmpty @RequestParam(required = false) List<String> uris,
+            @RequestParam(required = false) List<String> uris,
             @RequestParam(defaultValue = "false") boolean unique) throws BadRequestException {
 
         validateDateRangeParams(start, end);
