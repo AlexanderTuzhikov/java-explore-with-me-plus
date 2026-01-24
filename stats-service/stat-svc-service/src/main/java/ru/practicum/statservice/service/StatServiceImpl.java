@@ -46,16 +46,13 @@ public class StatServiceImpl implements StatService {
         LocalDateTime endTime = LocalDateTime.parse(end, formatter);
         List<ViewStatsDto> stats;
 
-        if (unique) {
-            stats = repository.findUniqueHits(startTime, endTime, uris);
-        } else {
-            stats = repository.findAllHits(startTime, endTime, uris);
-        }
+        // Если uris пустой или null, передаем null в репозиторий
+        List<String> urisParam = (uris == null || uris.isEmpty()) ? null : uris;
 
-        if (stats.isEmpty()) {
-            for (String uri : uris) {
-                stats.add(new ViewStatsDto(null, uri, 0L));
-            }
+        if (unique) {
+            stats = repository.findUniqueHits(startTime, endTime, urisParam);
+        } else {
+            stats = repository.findAllHits(startTime, endTime, urisParam);
         }
 
         return stats;
