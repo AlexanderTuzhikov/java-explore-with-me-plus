@@ -4,5 +4,5 @@ on:
   pull_request:
 
 jobs:
-#  build:
-#    uses: yandex-praktikum/java-explore-with-me-plus/.github/workflows/api-tests.yml@ci
+ build:
+   uses: yandex-praktikum/java-explore-with-me-plus/.github/workflows/api-tests.yml@ci
