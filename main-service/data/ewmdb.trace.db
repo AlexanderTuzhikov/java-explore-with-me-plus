@@ -1,0 +1,219 @@
+2026-01-30 17:08:10.915397+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:11.190936+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:11.256941+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+select u1_0.id,u1_0.email,u1_0.name from users u1_0 where u1_0.id=? [42104-224]
+2026-01-30 17:08:11.445966+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:11.534002+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENTS" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.annotation,e1_0.category_id,e1_0.created_on,e1_0.description,e1_0.event_date,e1_0.initiator_id,e1_0.lat,e1_0.lon,e1_0.paid,e1_0.participant_limit,e1_0.published_on,e1_0.request_moderation,e1_0.state,e1_0.title from events e1_0 where e1_0.state='PUBLISHED' and (? is null or lower(e1_0.annotation) like lower(('%'||?||'%')) escape '' or lower(e1_0.description) like lower(('%'||?||'%')) escape '') and (? is null or e1_0.category_id in (?)) and (? is null or e1_0.paid=?) and (? is null or e1_0.event_date>=?) and (? is null or e1_0.event_date<=?) order by e1_0.event_date offset ? rows fetch first ? rows only [42104-224]
+2026-01-30 17:08:11.714024+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:11.952047+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:12.189091+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:12.427105+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:12.649218+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:12.902639+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:13.138811+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:13.378404+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:13.617976+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:13.853574+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:13.901080+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENTS" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.annotation,e1_0.category_id,e1_0.created_on,e1_0.description,e1_0.event_date,e1_0.initiator_id,e1_0.lat,e1_0.lon,e1_0.paid,e1_0.participant_limit,e1_0.published_on,e1_0.request_moderation,e1_0.state,e1_0.title from events e1_0 where e1_0.id=? [42104-224]
+2026-01-30 17:08:14.078428+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:14.129425+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENTS" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.annotation,e1_0.category_id,e1_0.created_on,e1_0.description,e1_0.event_date,e1_0.initiator_id,e1_0.lat,e1_0.lon,e1_0.paid,e1_0.participant_limit,e1_0.published_on,e1_0.request_moderation,e1_0.state,e1_0.title from events e1_0 where (? is null or e1_0.initiator_id in (?)) and (? is null or e1_0.state in (?)) and (? is null or e1_0.category_id in (?)) and (? is null or e1_0.event_date>=?) and (? is null or e1_0.event_date<=?) order by e1_0.id desc offset ? rows fetch first ? rows only [42104-224]
+2026-01-30 17:08:14.317528+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENTS" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.annotation,e1_0.category_id,e1_0.created_on,e1_0.description,e1_0.event_date,e1_0.initiator_id,e1_0.lat,e1_0.lon,e1_0.paid,e1_0.participant_limit,e1_0.published_on,e1_0.request_moderation,e1_0.state,e1_0.title from events e1_0 where e1_0.state='PUBLISHED' and (? is null or lower(e1_0.annotation) like lower(('%'||?||'%')) escape '' or lower(e1_0.description) like lower(('%'||?||'%')) escape '') and (? is null or e1_0.category_id in (?)) and (? is null or e1_0.paid=?) and (? is null or e1_0.event_date>=?) and (? is null or e1_0.event_date<=?) order by e1_0.event_date offset ? rows fetch first ? rows only [42104-224]
+2026-01-30 17:08:14.490642+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:14.537645+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENTS" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.annotation,e1_0.category_id,e1_0.created_on,e1_0.description,e1_0.event_date,e1_0.initiator_id,e1_0.lat,e1_0.lon,e1_0.paid,e1_0.participant_limit,e1_0.published_on,e1_0.request_moderation,e1_0.state,e1_0.title from events e1_0 where e1_0.id=? [42104-224]
+2026-01-30 17:08:14.730841+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:14.762845+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+select u1_0.id,u1_0.email,u1_0.name from users u1_0 where u1_0.id=? [42104-224]
+2026-01-30 17:08:14.953149+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:15.172188+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:15.409235+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:15.648083+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:15.871210+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:16.109290+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:16.347673+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:16.569197+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:16.807202+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:17.047207+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:17.269709+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:17.506712+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:17.729717+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:17.967722+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:18.206727+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:18.429275+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:18.652303+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:18.890744+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:19.082748+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:19.319752+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:19.537760+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:19.743784+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:19.982276+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:20.221245+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:20.443111+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:20.660785+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:20.900791+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:21.139795+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:21.379404+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:21.427403+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENTS" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.annotation,e1_0.category_id,e1_0.created_on,e1_0.description,e1_0.event_date,e1_0.initiator_id,e1_0.lat,e1_0.lon,e1_0.paid,e1_0.participant_limit,e1_0.published_on,e1_0.request_moderation,e1_0.state,e1_0.title from events e1_0 where (? is null or e1_0.initiator_id in (?)) and (? is null or e1_0.state in (?)) and (? is null or e1_0.category_id in (?)) and (? is null or e1_0.event_date>=?) and (? is null or e1_0.event_date<=?) order by e1_0.id desc offset ? rows fetch first ? rows only [42104-224]
+2026-01-30 17:08:21.617314+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:21.663318+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+select u1_0.id,u1_0.email,u1_0.name from users u1_0 where u1_0.id=? [42104-224]
+2026-01-30 17:08:21.854474+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:21.902686+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENTS" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.annotation,e1_0.category_id,e1_0.created_on,e1_0.description,e1_0.event_date,e1_0.initiator_id,e1_0.lat,e1_0.lon,e1_0.paid,e1_0.participant_limit,e1_0.published_on,e1_0.request_moderation,e1_0.state,e1_0.title from events e1_0 where e1_0.state='PUBLISHED' and (? is null or lower(e1_0.annotation) like lower(('%'||?||'%')) escape '' or lower(e1_0.description) like lower(('%'||?||'%')) escape '') and (? is null or e1_0.category_id in (?)) and (? is null or e1_0.paid=?) and (? is null or e1_0.event_date>=?) and (? is null or e1_0.event_date<=?) order by e1_0.event_date offset ? rows fetch first ? rows only [42104-224]
+2026-01-30 17:08:22.074361+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:22.128360+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+select u1_0.id,u1_0.email,u1_0.name from users u1_0 where u1_0.id in (?) order by u1_0.id offset ? rows fetch first ? rows only [42104-224]
+2026-01-30 17:08:22.311937+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:22.362943+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+select u1_0.id,u1_0.email,u1_0.name from users u1_0 order by u1_0.id offset ? rows fetch first ? rows only [42104-224]
+2026-01-30 17:08:22.535967+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:22.582478+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "EVENTS" not found (this database is empty); SQL statement:
+select e1_0.id,e1_0.annotation,e1_0.category_id,e1_0.created_on,e1_0.description,e1_0.event_date,e1_0.initiator_id,e1_0.lat,e1_0.lon,e1_0.paid,e1_0.participant_limit,e1_0.published_on,e1_0.request_moderation,e1_0.state,e1_0.title from events e1_0 where (? is null or e1_0.initiator_id in (?)) and (? is null or e1_0.state in (?)) and (? is null or e1_0.category_id in (?)) and (? is null or e1_0.event_date>=?) and (? is null or e1_0.event_date<=?) order by e1_0.id desc offset ? rows fetch first ? rows only [42104-224]
+2026-01-30 17:08:24.149371+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:24.527037+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:24.941736+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:25.337398+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:25.735710+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:26.134908+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:26.308674+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+insert into users (email,name,id) values (?,?,default) [42104-224]
+2026-01-30 17:08:26.356677+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "USERS" not found (this database is empty); SQL statement:
+select u1_0.id,u1_0.email,u1_0.name from users u1_0 order by u1_0.id offset ? rows fetch first ? rows only [42104-224]
+2026-01-30 17:08:26.454198+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CATEGORIES" not found (this database is empty); SQL statement:
+select c1_0.id,c1_0.name from categories c1_0 order by c1_0.id desc offset ? rows fetch first ? rows only [42104-224]
+2026-01-30 17:08:27.251495+03:00 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Table "CATEGORIES" not found (this database is empty); SQL statement:
+insert into categories (name,id) values (?,default) [42104-224]
