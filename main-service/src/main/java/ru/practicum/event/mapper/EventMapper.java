@@ -2,6 +2,7 @@ package ru.practicum.event.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import ru.practicum.category.mapper.CategoryMapper;
 import ru.practicum.category.model.Category;
 import ru.practicum.event.dto.EventFullDto;
 import ru.practicum.event.dto.EventShortDto;
@@ -9,9 +10,10 @@ import ru.practicum.event.dto.NewEventDto;
 import ru.practicum.event.model.Event;
 import ru.practicum.location.dto.Location;
 import ru.practicum.location.model.LocationEntity;
+import ru.practicum.user.mapper.UserMapper;
 import ru.practicum.user.model.User;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {CategoryMapper.class, UserMapper.class})
 public interface EventMapper {
 
     @Mapping(target = "id", ignore = true)
