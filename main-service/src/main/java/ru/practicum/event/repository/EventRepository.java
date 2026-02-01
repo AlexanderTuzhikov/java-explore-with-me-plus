@@ -15,11 +15,11 @@ import java.util.Optional;
 public interface EventRepository extends JpaRepository<Event, Long> {
     Page<Event> findAllByInitiatorId(Long userId, Pageable pageable);
 
-    Page<Event> findByState(EventState state, Pageable pageable);
-
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
 
     List<Event> findAllByCategoryId(Long categoryId);
+
+    Page<Event> findByState(EventState state, Pageable pageable);
 
     @Query("SELECT e FROM Event e WHERE " +
             "(:users IS NULL OR e.initiator.id IN :users) AND " +
@@ -34,15 +34,15 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                          @Param("rangeEnd") LocalDateTime rangeEnd,
                                          Pageable pageable);
 
-    @Query(value = "SELECT * FROM events e WHERE " +
+    // Универсальный запрос, который работает и в H2 и в PostgreSQL
+    @Query("SELECT e FROM Event e WHERE " +
             "e.state = 'PUBLISHED' " +
             "AND (:text IS NULL OR LOWER(e.annotation) LIKE LOWER(CONCAT('%', :text, '%')) " +
             "OR LOWER(e.description) LIKE LOWER(CONCAT('%', :text, '%'))) " +
-            "AND (:categories IS NULL OR e.category_id IN :categories) " +
-            "AND (:paid IS NULL OR e.paid = CAST(:paid AS BOOLEAN)) " +
-            "AND (:rangeStart IS NULL OR e.event_date >= :rangeStart) " +
-            "AND (:rangeEnd IS NULL OR e.event_date <= :rangeEnd)",
-            nativeQuery = true)
+            "AND (:categories IS NULL OR e.category.id IN :categories) " +
+            "AND (:rangeStart IS NULL OR e.eventDate >= :rangeStart) " +
+            "AND (:rangeEnd IS NULL OR e.eventDate <= :rangeEnd) " +
+            "AND (:paid IS NULL OR e.paid = :paid)")
     Page<Event> findEventsByPublicFilters(@Param("text") String text,
                                           @Param("categories") List<Long> categories,
                                           @Param("paid") Boolean paid,
@@ -50,6 +50,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                           @Param("rangeEnd") LocalDateTime rangeEnd,
                                           Pageable pageable);
 
+    // Альтернативный простой метод для отладки
     @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED'")
-    Page<Event> findPublishedEvents(Pageable pageable);
+    Page<Event> findAllPublished(Pageable pageable);
 }

@@ -190,15 +190,19 @@ public class EventServiceImpl implements EventService {
         Sort sort = getSort(params.getSort());
         Pageable pageable = createPageable(params.getPageParams(), sort);
 
-        Page<Event> events = eventRepository.findByState(EventState.PUBLISHED, pageable);
+        // Используйте простой запрос без фильтров
+        Page<Event> events = eventRepository.findAllPublished(pageable);
 
-        // Фильтруем в коде
+        // Фильтруйте в коде
         List<Event> filteredEvents = events.getContent().stream()
                 .filter(event -> filterByText(event, params.getText()))
                 .filter(event -> filterByCategories(event, params.getCategories()))
                 .filter(event -> filterByPaid(event, params.getPaid()))
                 .filter(event -> filterByDateRange(event, rangeStart, params.getRangeEnd()))
                 .collect(Collectors.toList());
+
+        // Фильтр по доступности
+        filteredEvents = filterByAvailability(filteredEvents, params.getOnlyAvailable());
 
         Map<Long, Long> views = getEventsViews(filteredEvents);
 
