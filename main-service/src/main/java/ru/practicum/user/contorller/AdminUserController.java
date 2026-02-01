@@ -38,7 +38,9 @@ public class AdminUserController {
     public ResponseEntity<List<UserDto>> getUsers(@RequestParam(required = false) List<Long> ids,
                                                   @RequestParam(name = "from", defaultValue = "0") Integer from,
                                                   @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        Pageable pageable = PageRequest.of(from / size, size, Sort.by("id").ascending());
+        // Защита от деления на ноль
+        if (size == 0) size = 10;
+        Pageable pageable = PageRequest.of(from / Math.max(size, 1), size, Sort.by("id").ascending());
 
         if (ids == null || ids.isEmpty()) {
             return ResponseEntity.ok().body(userService.getAllUsers(pageable).getContent());

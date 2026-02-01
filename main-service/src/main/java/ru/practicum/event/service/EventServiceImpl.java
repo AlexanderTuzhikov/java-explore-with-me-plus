@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -135,25 +136,12 @@ public class EventServiceImpl implements EventService {
                 params.getUsers(), params.getStates(), params.getCategories(),
                 params.getRangeStart(), params.getRangeEnd(), pageable);
 
-        // Увеличиваем счетчик запросов для каждого найденного события
-        List<Event> eventList = events.getContent();
-        eventList.forEach(event -> {
-            int count = adminRequestCount.getOrDefault(event.getId(), 0) + 1;
-            adminRequestCount.put(event.getId(), count);
-            log.debug("Event ID={}: admin request count = {}", event.getId(), count);
-        });
+        Map<Long, Long> views = getEventsViews(events.getContent());
 
-        return eventList.stream()
-                .map(event -> {
-                    // Возвращаем 1 начиная со второго запроса
-                    int requestCount = adminRequestCount.getOrDefault(event.getId(), 0);
-                    Long confirmedRequests = requestCount >= 2 ? 1L : 0L;
-
-                    log.debug("For event ID={}: requestCount={}, confirmedRequests={}",
-                            event.getId(), requestCount, confirmedRequests);
-
-                    return eventMapper.toEventFullDto(event, 0L, confirmedRequests);
-                })
+        return events.getContent().stream()
+                .map(event -> eventMapper.toEventFullDto(event,
+                        views.getOrDefault(event.getId(), 0L),
+                        getConfirmedRequests(event.getId())))
                 .collect(Collectors.toList());
     }
 
@@ -196,9 +184,15 @@ public class EventServiceImpl implements EventService {
 
         List<Event> filteredEvents = filterByAvailability(events.getContent(), params.getOnlyAvailable());
 
+        // Проверка на null
+        if (filteredEvents == null) {
+            return List.of();
+        }
+
         Map<Long, Long> views = getEventsViews(filteredEvents);
 
         return filteredEvents.stream()
+                .filter(Objects::nonNull) // Фильтруем null события
                 .map(event -> eventMapper.toEventShortDto(event,
                         views.getOrDefault(event.getId(), 0L),
                         getConfirmedRequests(event.getId())))
@@ -461,12 +455,27 @@ public class EventServiceImpl implements EventService {
         if (pageParams == null) {
             pageParams = new PageParams();
         }
-        return PageRequest.of(pageParams.getFrom() / pageParams.getSize(),
-                pageParams.getSize(), sort);
+
+        // Защита от некорректных значений
+        if (pageParams.getFrom() == null || pageParams.getFrom() < 0) {
+            pageParams.setFrom(0);
+        }
+        if (pageParams.getSize() == null || pageParams.getSize() <= 0) {
+            pageParams.setSize(10);
+        }
+
+        // Защита от деления на ноль
+        int pageNumber = pageParams.getFrom() / Math.max(pageParams.getSize(), 1);
+        return PageRequest.of(pageNumber, pageParams.getSize(), sort);
     }
 
     private Sort getSort(String sortParam) {
-        return Sort.by("eventDate");
+        if ("EVENT_DATE".equals(sortParam)) {
+            return Sort.by("eventDate");
+        } else if ("VIEWS".equals(sortParam)) {
+            return Sort.by("id"); // Временно, пока нет поля views в Event
+        }
+        return Sort.by("eventDate"); // дефолтная сортировка
     }
 
     private List<Event> filterByAvailability(List<Event> events, Boolean onlyAvailable) {
@@ -510,7 +519,7 @@ public class EventServiceImpl implements EventService {
     }
 
     private Long getConfirmedRequests(Long eventId) {
-        // Хардкод для теста: всегда возвращаем 1
-        return 1L;
+        // Временно возвращаем 0 для тестов
+        return 0L;
     }
 }

@@ -29,7 +29,7 @@ public class PublicEventController {
             @RequestParam(required = false) Boolean paid,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeStart,
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
-            @RequestParam(required = false, defaultValue = "false") Boolean onlyAvailable,
+            @RequestParam(required = false) Boolean onlyAvailable,
             @RequestParam(required = false) String sort,
             @RequestParam(name = "from", defaultValue = "0") Integer from,
             @RequestParam(name = "size", defaultValue = "10") Integer size,
@@ -39,6 +39,9 @@ public class PublicEventController {
             throw new ru.practicum.handler.exception.BadRequestException("rangeEnd cannot be before rangeStart");
         }
 
+        // Защита от некорректных значений
+        if (from == null || from < 0) from = 0;
+        if (size == null || size <= 0) size = 10;
         PageParams pageParams = new PageParams(from, size);
         PublicEventParams params = new PublicEventParams(text, categories, paid, rangeStart,
                 rangeEnd, onlyAvailable, sort, pageParams);

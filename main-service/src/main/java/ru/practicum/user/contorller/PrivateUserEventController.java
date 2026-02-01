@@ -29,7 +29,9 @@ public class PrivateUserEventController {
     public ResponseEntity<List<EventShortDto>> getEvents(@PathVariable Long userId,
                                                          @RequestParam(name = "from", defaultValue = "0") Integer from,
                                                          @RequestParam(name = "size", defaultValue = "10") Integer size) {
-        Pageable pageable = PageRequest.of(from / size, size, Sort.by("id").ascending());
+        // Защита от деления на ноль
+        if (size == 0) size = 10;
+        Pageable pageable = PageRequest.of(from / Math.max(size, 1), size, Sort.by("id").ascending());
         return ResponseEntity.ok(eventService.getEvents(userId, pageable));
     }
 

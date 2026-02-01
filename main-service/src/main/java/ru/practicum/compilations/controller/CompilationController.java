@@ -28,7 +28,12 @@ public class CompilationController {
     List<CompilationDto> getCompilations(@RequestParam(required = false, name = "pinned") Boolean pinned,
                                          @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
                                          @RequestParam(name = "size", defaultValue = "10") @PositiveOrZero int size) {
-        CompilationSearchParam params = new CompilationSearchParam(pinned, from, size);
+        // Защита от некорректных значений
+        if (size == 0) size = 10;
+        int effectiveFrom = Math.max(from, 0);
+        int effectiveSize = Math.max(size, 1);
+
+        CompilationSearchParam params = new CompilationSearchParam(pinned, effectiveFrom, effectiveSize);
         return compilationService.getCompilations(params);
     }
 }

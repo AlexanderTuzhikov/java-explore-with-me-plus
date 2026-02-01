@@ -31,7 +31,10 @@ public class AdminEventController {
             @RequestParam(name = "from", defaultValue = "0") Integer from,
             @RequestParam(name = "size", defaultValue = "10") Integer size) {
 
-            PageParams pageParams = new PageParams(from, size);
+        // Защита от некорректных значений
+        if (from == null || from < 0) from = 0;
+        if (size == null || size <= 0) size = 10;
+        PageParams pageParams = new PageParams(from, size);
             EventParams params = new EventParams(users, states, categories, rangeStart, rangeEnd, pageParams);
             return ResponseEntity.ok(eventService.getEventsByAdminFilters(params));
     }

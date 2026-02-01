@@ -23,8 +23,10 @@ public class PublicCategoryController {
 
     @GetMapping
     public ResponseEntity<List<CategoryDto>> getCategories(@RequestParam(name = "from", defaultValue = "0") Integer from,
-                                                          @RequestParam(name = "size", defaultValue = "10") Integer size) throws BadRequestException {
-        Pageable pageable = PageRequest.of(from / size, size, Sort.by("id").descending());
+                                                           @RequestParam(name = "size", defaultValue = "10") Integer size) throws BadRequestException {
+        // Защита от деления на ноль
+        if (size == 0) size = 10;
+        Pageable pageable = PageRequest.of(from / Math.max(size, 1), size, Sort.by("id").descending());
 
         try {
             return ResponseEntity.ok().body(categoryService.getCategories(pageable).getContent());
