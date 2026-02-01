@@ -276,21 +276,6 @@ public class EventServiceImpl implements EventService {
         return true;
     }
 
-    private List<Event> filterByAvailability(List<Event> events, Boolean onlyAvailable) {
-        if (Boolean.TRUE.equals(onlyAvailable)) {
-            return events.stream()
-                    .filter(event -> {
-                        if (event == null) return false;
-                        if (event.getParticipantLimit() == 0) return true;
-
-                        Long confirmed = getConfirmedRequests(event.getId());
-                        return confirmed < event.getParticipantLimit();
-                    })
-                    .collect(Collectors.toList());
-        }
-        return events;
-    }
-
     @Override
     public EventFullDto getEventById(Long eventId, HttpServletRequest request) {
         log.info("Getting event ID: {}", eventId);
