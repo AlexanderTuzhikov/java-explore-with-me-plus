@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import ru.practicum.handler.exception.ConflictException;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -69,34 +70,18 @@ public class ErrorHandler {
                 "The required object was not found.", HttpStatus.NOT_FOUND.toString(), LocalDateTime.now().format(FORMATTER));
     }
 
-    @ExceptionHandler(ru.practicum.handler.exception.ConflictException.class)
-    public ResponseEntity<Object> handleConflictException(final ru.practicum.handler.exception.ConflictException exception) {
-        log.error("=== CONFLICT EXCEPTION HANDLER ===");
-        log.error("Exception message: {}", exception.getMessage());
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleConflictException(final ConflictException exception) {
+        log.error("ConflictException: {}", exception.getMessage());
 
-        Object existingData = exception.getExistingData();
-
-        if (existingData != null) {
-            log.error("Returning existing data: {}", existingData);
-
-            // Вариант с HttpHeaders
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("X-Test-Info", "Conflict-handled");
-
-            return new ResponseEntity<>(existingData, headers, HttpStatus.CONFLICT);
-        }
-
-        log.error("No data, returning ApiError");
-        ApiError apiError = new ApiError(
+        return new ApiError(
                 getStackTrace(exception),
                 exception.getMessage(),
                 "For the requested operation the conditions are not met.",
                 HttpStatus.CONFLICT.toString(),
                 LocalDateTime.now().format(FORMATTER)
         );
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
