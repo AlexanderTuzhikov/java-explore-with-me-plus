@@ -210,22 +210,25 @@ public class RequestServiceImpl implements RequestService {
 
     private Integer checkEventLimit(Event event) {
         Integer eventLimit = event.getParticipantLimit();
+
+        // Если лимит 0 - всегда можно участвовать
         if (eventLimit == 0) {
-            return 0;  // Если лимит 0, всегда есть место
+            return 0;
         }
 
         // Считаем только CONFIRMED запросы
-        Integer eventConfirmRequests = requestRepository.countByEventIdAndStatusIn(
+        Integer confirmedCount = requestRepository.countByEventIdAndStatusIn(
                 event.getId(),
                 List.of(RequestState.CONFIRMED)
         );
 
-        if (eventConfirmRequests >= eventLimit) {
-            log.error("Participant limit reached event ID={}", event.getId());
+        log.debug("Event ID={}: limit={}, confirmed={}", event.getId(), eventLimit, confirmedCount);
+
+        if (confirmedCount >= eventLimit) {
             throw new ConflictException("Participant limit reached");
         }
 
-        return eventConfirmRequests;
+        return confirmedCount;
     }
 
     private void checkEventStatus(Event event) {
