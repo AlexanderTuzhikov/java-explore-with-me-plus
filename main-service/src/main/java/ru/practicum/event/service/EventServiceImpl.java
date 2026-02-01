@@ -143,18 +143,16 @@ public class EventServiceImpl implements EventService {
             log.debug("Event ID={}: admin request count = {}", event.getId(), count);
         });
 
-        return eventList.stream()
-                .map(event -> {
-                    // Возвращаем 1 начиная со второго запроса
-                    int requestCount = adminRequestCount.getOrDefault(event.getId(), 0);
-                    Long confirmedRequests = requestCount >= 2 ? 1L : 0L;
+        return events.getContent().stream()
+                .map(event ->
+                        eventMapper.toEventFullDto(
+                                event,
+                                0L,
+                                0L
+                        )
+                )
+                .toList();
 
-                    log.debug("For event ID={}: requestCount={}, confirmedRequests={}",
-                            event.getId(), requestCount, confirmedRequests);
-
-                    return eventMapper.toEventFullDto(event, 0L, confirmedRequests);
-                })
-                .collect(Collectors.toList());
     }
 
     @Override
