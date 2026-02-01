@@ -190,11 +190,15 @@ public class EventServiceImpl implements EventService {
         Sort sort = getSort(params.getSort());
         Pageable pageable = createPageable(params.getPageParams(), sort);
 
-        Page<Event> events = eventRepository.findEventsByPublicFilters(
-                params.getText(), params.getCategories(), params.getPaid(),
-                rangeStart, params.getRangeEnd(), pageable);
+        Page<Event> events = eventRepository.findByState(EventState.PUBLISHED, pageable);
 
-        List<Event> filteredEvents = filterByAvailability(events.getContent(), params.getOnlyAvailable());
+        // Фильтруем в коде
+        List<Event> filteredEvents = events.getContent().stream()
+                .filter(event -> filterByText(event, params.getText()))
+                .filter(event -> filterByCategories(event, params.getCategories()))
+                .filter(event -> filterByPaid(event, params.getPaid()))
+                .filter(event -> filterByDateRange(event, rangeStart, params.getRangeEnd()))
+                .collect(Collectors.toList());
 
         Map<Long, Long> views = getEventsViews(filteredEvents);
 
@@ -203,6 +207,28 @@ public class EventServiceImpl implements EventService {
                         views.getOrDefault(event.getId(), 0L),
                         getConfirmedRequests(event.getId())))
                 .collect(Collectors.toList());
+    }
+
+    private boolean filterByCategories(Event event, List<Long> categories) {
+        if (categories == null || categories.isEmpty()) return true;
+        return categories.contains(event.getCategory().getId());
+    }
+
+    private boolean filterByDateRange(Event event, LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+        if (rangeStart != null && event.getEventDate().isBefore(rangeStart)) return false;
+        if (rangeEnd != null && event.getEventDate().isAfter(rangeEnd)) return false;
+        return true;
+    }
+
+    private boolean filterByText(Event event, String text) {
+        if (text == null || text.isBlank()) return true;
+        String lowerText = text.toLowerCase();
+        return event.getAnnotation().toLowerCase().contains(lowerText) ||
+                event.getDescription().toLowerCase().contains(lowerText);
+    }
+
+    private boolean filterByPaid(Event event, Boolean paid) {
+        return paid == null || event.getPaid().equals(paid);
     }
 
     @Override

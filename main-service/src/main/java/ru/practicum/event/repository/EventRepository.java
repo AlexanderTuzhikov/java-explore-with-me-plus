@@ -15,6 +15,8 @@ import java.util.Optional;
 public interface EventRepository extends JpaRepository<Event, Long> {
     Page<Event> findAllByInitiatorId(Long userId, Pageable pageable);
 
+    Page<Event> findByState(EventState state, Pageable pageable);
+
     Optional<Event> findByIdAndInitiatorId(Long eventId, Long userId);
 
     List<Event> findAllByCategoryId(Long categoryId);
@@ -47,4 +49,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                           @Param("rangeStart") LocalDateTime rangeStart,
                                           @Param("rangeEnd") LocalDateTime rangeEnd,
                                           Pageable pageable);
+
+    @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED'")
+    Page<Event> findPublishedEvents(Pageable pageable);
 }
