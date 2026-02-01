@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.category.model.Category;
 import ru.practicum.category.repository.CategoryRepository;
+import ru.practicum.client.StatClient;
+import ru.practicum.dto.NewEndpointHitDto;
+import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.event.dto.*;
 import ru.practicum.event.mapper.EventMapper;
 import ru.practicum.event.model.Event;
@@ -21,16 +24,16 @@ import ru.practicum.event.repository.EventRepository;
 import ru.practicum.handler.exception.BadRequestException;
 import ru.practicum.handler.exception.ConflictException;
 import ru.practicum.handler.exception.NotFoundException;
-import ru.practicum.client.StatClient;
-import ru.practicum.dto.NewEndpointHitDto;
-import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -152,7 +155,6 @@ public class EventServiceImpl implements EventService {
                         )
                 )
                 .toList();
-
     }
 
     @Override
