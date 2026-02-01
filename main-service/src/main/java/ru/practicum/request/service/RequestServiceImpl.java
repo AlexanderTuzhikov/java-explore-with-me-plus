@@ -203,7 +203,7 @@ public class RequestServiceImpl implements RequestService {
         Optional<Request> request = requestRepository.findByRequesterIdAndEventId(userId, eventId);
 
         if (request.isPresent()) {
-            log.error("Try double request user ID={}, for event ID={}=", userId, eventId);
+            log.error("Try double request user ID={}, for event ID={}", userId, eventId);
             throw new ConflictException("Duplicate requests are not allowed.");
         }
     }
@@ -216,15 +216,18 @@ public class RequestServiceImpl implements RequestService {
             return 0;
         }
 
-        // Считаем только CONFIRMED запросы
-        Integer confirmedCount = requestRepository.countByEventIdAndStatusIn(
-                event.getId(),
-                List.of(RequestState.CONFIRMED)
-        );
+        // Считаем ТОЛЬКО CONFIRMED запросы
+        List<RequestState> confirmedStatus = List.of(RequestState.CONFIRMED);
+        Integer confirmedCount = requestRepository.countByEventIdAndStatusIn(event.getId(), confirmedStatus);
+
+        // Если confirmedCount null, считаем 0
+        if (confirmedCount == null) {
+            confirmedCount = 0;
+        }
 
         log.debug("Event ID={}: limit={}, confirmed={}", event.getId(), eventLimit, confirmedCount);
 
-        if (confirmedCount >= eventLimit) {
+        if (eventLimit != 0 && confirmedCount >= eventLimit) {
             throw new ConflictException("Participant limit reached");
         }
 
