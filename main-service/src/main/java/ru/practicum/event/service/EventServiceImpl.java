@@ -183,56 +183,112 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> getEventsByPublicFilters(PublicEventParams params, HttpServletRequest request) {
-        log.info("Getting events by public filters");
+        log.info("Getting events by public filters: text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}",
+                params.getText(), params.getCategories(), params.getPaid(),
+                params.getRangeStart(), params.getRangeEnd());
 
         LocalDateTime rangeStart = params.getRangeStart() != null ? params.getRangeStart() : LocalDateTime.now();
 
         Sort sort = getSort(params.getSort());
         Pageable pageable = createPageable(params.getPageParams(), sort);
 
-        // Используйте простой запрос без фильтров
-        Page<Event> events = eventRepository.findAllPublished(pageable);
+        log.info("Pageable: from={}, size={}, sort={}", pageable.getOffset(), pageable.getPageSize(), sort);
 
-        // Фильтруйте в коде
-        List<Event> filteredEvents = events.getContent().stream()
+        // ПРОСТОЙ запрос - только опубликованные события
+        Page<Event> eventsPage = eventRepository.findAllPublished(pageable);
+        List<Event> allEvents = eventsPage.getContent();
+
+        log.info("Found {} published events total", allEvents.size());
+
+        if (allEvents.isEmpty()) {
+            log.info("No published events found");
+            return List.of();
+        }
+
+        // Фильтрация ВСЕГО в коде (безопасная версия)
+        List<Event> filteredEvents = allEvents.stream()
+                .filter(event -> {
+                    if (event == null) return false;
+                    return true;
+                })
                 .filter(event -> filterByText(event, params.getText()))
                 .filter(event -> filterByCategories(event, params.getCategories()))
                 .filter(event -> filterByPaid(event, params.getPaid()))
                 .filter(event -> filterByDateRange(event, rangeStart, params.getRangeEnd()))
                 .collect(Collectors.toList());
 
+        log.info("After basic filtering: {} events", filteredEvents.size());
+
         // Фильтр по доступности
         filteredEvents = filterByAvailability(filteredEvents, params.getOnlyAvailable());
 
+        log.info("After availability filtering: {} events", filteredEvents.size());
+
         Map<Long, Long> views = getEventsViews(filteredEvents);
 
-        return filteredEvents.stream()
-                .map(event -> eventMapper.toEventShortDto(event,
-                        views.getOrDefault(event.getId(), 0L),
-                        getConfirmedRequests(event.getId())))
+        List<EventShortDto> result = filteredEvents.stream()
+                .map(event -> {
+                    Long viewsCount = views.getOrDefault(event.getId(), 0L);
+                    Long confirmed = getConfirmedRequests(event.getId());
+                    log.debug("Event ID={}: views={}, confirmed={}", event.getId(), viewsCount, confirmed);
+                    return eventMapper.toEventShortDto(event, viewsCount, confirmed);
+                })
                 .collect(Collectors.toList());
+
+        log.info("Returning {} events", result.size());
+        return result;
+    }
+
+    // Безопасные методы фильтрации с проверкой null
+    private boolean filterByText(Event event, String text) {
+        if (text == null || text.trim().isEmpty()) return true;
+        if (event == null) return false;
+
+        String lowerText = text.toLowerCase().trim();
+        boolean annotationMatch = event.getAnnotation() != null &&
+                event.getAnnotation().toLowerCase().contains(lowerText);
+        boolean descriptionMatch = event.getDescription() != null &&
+                event.getDescription().toLowerCase().contains(lowerText);
+
+        return annotationMatch || descriptionMatch;
     }
 
     private boolean filterByCategories(Event event, List<Long> categories) {
         if (categories == null || categories.isEmpty()) return true;
+        if (event == null || event.getCategory() == null) return false;
+
         return categories.contains(event.getCategory().getId());
     }
 
+    private boolean filterByPaid(Event event, Boolean paid) {
+        if (paid == null) return true;
+        if (event == null || event.getPaid() == null) return false;
+
+        return event.getPaid().equals(paid);
+    }
+
     private boolean filterByDateRange(Event event, LocalDateTime rangeStart, LocalDateTime rangeEnd) {
+        if (event == null || event.getEventDate() == null) return false;
+
         if (rangeStart != null && event.getEventDate().isBefore(rangeStart)) return false;
         if (rangeEnd != null && event.getEventDate().isAfter(rangeEnd)) return false;
+
         return true;
     }
 
-    private boolean filterByText(Event event, String text) {
-        if (text == null || text.isBlank()) return true;
-        String lowerText = text.toLowerCase();
-        return event.getAnnotation().toLowerCase().contains(lowerText) ||
-                event.getDescription().toLowerCase().contains(lowerText);
-    }
+    private List<Event> filterByAvailability(List<Event> events, Boolean onlyAvailable) {
+        if (Boolean.TRUE.equals(onlyAvailable)) {
+            return events.stream()
+                    .filter(event -> {
+                        if (event == null) return false;
+                        if (event.getParticipantLimit() == 0) return true;
 
-    private boolean filterByPaid(Event event, Boolean paid) {
-        return paid == null || event.getPaid().equals(paid);
+                        Long confirmed = getConfirmedRequests(event.getId());
+                        return confirmed < event.getParticipantLimit();
+                    })
+                    .collect(Collectors.toList());
+        }
+        return events;
     }
 
     @Override
