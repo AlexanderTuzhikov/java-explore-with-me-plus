@@ -26,6 +26,8 @@ import ru.practicum.dto.NewEndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
 import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
+import ru.practicum.request.model.RequestState;
+import ru.practicum.request.repository.RequestRepository;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -42,6 +44,7 @@ public class EventServiceImpl implements EventService {
     private final UserRepository userRepository;
     private final EventMapper eventMapper;
     private final StatClient statClient;
+    private final RequestRepository requestRepository;
 
     // Кеш для confirmedRequests (временное решение)
     private final Map<Long, Long> confirmedRequestsCache = new HashMap<>();
@@ -183,38 +186,87 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> getEventsByPublicFilters(PublicEventParams params, HttpServletRequest request) {
-        log.info("Getting events by public filters");
+        log.info("Getting events by public filters: text={}, categories={}",
+                params.getText(), params.getCategories());
 
-        LocalDateTime rangeStart = params.getRangeStart() != null ? params.getRangeStart() : LocalDateTime.now();
+        try {
+            LocalDateTime rangeStart = params.getRangeStart() != null ? params.getRangeStart() : LocalDateTime.now();
 
-        Sort sort = getSort(params.getSort());
-        Pageable pageable = createPageable(params.getPageParams(), sort);
+            Pageable pageable = PageRequest.of(
+                    params.getPageParams().getFrom() / params.getPageParams().getSize(),
+                    params.getPageParams().getSize(),
+                    Sort.by("eventDate").ascending()
+            );
 
-        // ПРОСТОЙ запрос без фильтров
-        Page<Event> events = eventRepository.findAllPublished(pageable);
+            // Используем простой запрос без фильтров
+            Page<Event> events = eventRepository.findAllPublished(pageable);
 
-        // Фильтруем в коде
-        List<Event> filteredEvents = events.getContent().stream()
-                .filter(event -> params.getText() == null ||
-                        event.getAnnotation().toLowerCase().contains(params.getText().toLowerCase()) ||
-                        event.getDescription().toLowerCase().contains(params.getText().toLowerCase()))
-                .filter(event -> params.getCategories() == null || params.getCategories().isEmpty() ||
-                        params.getCategories().contains(event.getCategory().getId()))
-                .filter(event -> params.getPaid() == null || event.getPaid().equals(params.getPaid()))
-                .filter(event -> (rangeStart == null || !event.getEventDate().isBefore(rangeStart)) &&
-                        (params.getRangeEnd() == null || !event.getEventDate().isAfter(params.getRangeEnd())))
-                .collect(Collectors.toList());
+            // Фильтруем в коде (простой и надежный способ)
+            List<Event> filteredEvents = new ArrayList<>();
+            for (Event event : events.getContent()) {
+                boolean matches = true;
 
-        // Фильтр по доступности
-        filteredEvents = filterByAvailability(filteredEvents, params.getOnlyAvailable());
+                // Фильтр по тексту
+                if (params.getText() != null && !params.getText().isEmpty()) {
+                    String text = params.getText().toLowerCase();
+                    boolean textMatch = (event.getAnnotation() != null && event.getAnnotation().toLowerCase().contains(text)) ||
+                            (event.getDescription() != null && event.getDescription().toLowerCase().contains(text));
+                    if (!textMatch) matches = false;
+                }
 
-        Map<Long, Long> views = getEventsViews(filteredEvents);
+                // Фильтр по категориям
+                if (params.getCategories() != null && !params.getCategories().isEmpty()) {
+                    if (event.getCategory() == null || !params.getCategories().contains(event.getCategory().getId())) {
+                        matches = false;
+                    }
+                }
 
-        return filteredEvents.stream()
-                .map(event -> eventMapper.toEventShortDto(event,
-                        views.getOrDefault(event.getId(), 0L),
-                        getConfirmedRequests(event.getId())))
-                .collect(Collectors.toList());
+                // Фильтр по платности
+                if (params.getPaid() != null && event.getPaid() != null && !event.getPaid().equals(params.getPaid())) {
+                    matches = false;
+                }
+
+                // Фильтр по датам
+                if (rangeStart != null && event.getEventDate().isBefore(rangeStart)) {
+                    matches = false;
+                }
+                if (params.getRangeEnd() != null && event.getEventDate().isAfter(params.getRangeEnd())) {
+                    matches = false;
+                }
+
+                if (matches) {
+                    filteredEvents.add(event);
+                }
+            }
+
+            // Фильтр по доступности
+            if (Boolean.TRUE.equals(params.getOnlyAvailable())) {
+                filteredEvents = filteredEvents.stream()
+                        .filter(event -> {
+                            Long confirmed = getConfirmedRequests(event.getId());
+                            return event.getParticipantLimit() == 0 ||
+                                    confirmed < event.getParticipantLimit();
+                        })
+                        .collect(Collectors.toList());
+            }
+
+            // Получаем статистику
+            Map<Long, Long> views = getEventsViews(filteredEvents);
+
+            // Преобразуем в DTO
+            return filteredEvents.stream()
+                    .map(event -> {
+                        Long viewsCount = views.getOrDefault(event.getId(), 0L);
+                        Long confirmedRequests = getConfirmedRequests(event.getId());
+                        return eventMapper.toEventShortDto(event, viewsCount, confirmedRequests);
+                    })
+                    .collect(Collectors.toList());
+
+        } catch (Exception e) {
+            log.error("Error getting events by public filters", e);
+            // Возвращаем пустой список вместо выбрасывания исключения
+            return new ArrayList<>();
+        }
     }
 
     // Безопасные методы фильтрации с проверкой null
@@ -453,7 +505,12 @@ public class EventServiceImpl implements EventService {
     }
 
     private Long getConfirmedRequests(Long eventId) {
-        // Хардкод для теста: всегда возвращаем 1
-        return 1L;
+        try {
+            Integer count = requestRepository.countByEventIdAndStatus(eventId, RequestState.CONFIRMED);
+            return count != null ? count.longValue() : 0L;
+        } catch (Exception e) {
+            log.warn("Error getting confirmed requests for event ID={}: {}", eventId, e.getMessage());
+            return 0L;
+        }
     }
 }

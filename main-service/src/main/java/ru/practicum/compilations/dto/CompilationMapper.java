@@ -3,10 +3,13 @@ package ru.practicum.compilations.dto;
 import org.mapstruct.*;
 import ru.practicum.compilations.model.Compilation;
 import ru.practicum.event.dto.EventShortDto;
+import ru.practicum.event.mapper.EventMapper;
 
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring",
+        uses = {EventMapper.class},
+        unmappedTargetPolicy = ReportingPolicy.IGNORE)
 public interface CompilationMapper {
 
     @Mapping(target = "id", ignore = true)

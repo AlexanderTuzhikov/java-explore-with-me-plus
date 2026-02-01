@@ -9,6 +9,10 @@ import ru.practicum.request.model.Request;
 @Mapper(componentModel = "spring")
 public interface RequestMapper {
     @Mapping(target = "id", ignore = true)
+    @Mapping(target = "requester", source = "requester")
+    @Mapping(target = "event", source = "event")
+    @Mapping(target = "status", source = "status")
+    @Mapping(target = "created", source = "created")
     Request mapToRequest(NewRequestDto newRequestDto);
 
     @Mapping(target = "requester", source = "requester.id")

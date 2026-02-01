@@ -9,7 +9,6 @@ import ru.practicum.event.model.EventState;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.handler.exception.ConflictException;
 import ru.practicum.handler.exception.NotFoundException;
-import ru.practicum.request.dto.NewRequestDto;
 import ru.practicum.request.dto.ParticipationRequestDto;
 import ru.practicum.request.dto.RequestStatusUpdateDto;
 import ru.practicum.request.mapper.RequestMapper;
@@ -20,9 +19,8 @@ import ru.practicum.user.model.User;
 import ru.practicum.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 @Slf4j
 @Service
@@ -39,9 +37,8 @@ public class RequestServiceImpl implements RequestService {
         log.info("GET requests: user ID={}", userId);
 
         checkUserExists(userId);
-
         List<Request> requests = requestRepository.findByRequesterId(userId);
-        log.debug("FIND requests: size={}", requests.size());
+        log.debug("FOUND {} requests for user ID={}", requests.size(), userId);
 
         return requests.stream()
                 .map(requestMapper::mapToRequestDto)
@@ -55,23 +52,43 @@ public class RequestServiceImpl implements RequestService {
 
         User user = checkUserExists(userId);
         Event event = checkEventExists(eventId);
-        checkDoubleRequest(userId, eventId);
 
-        RequestState requestState = RequestState.PENDING;
-
-        if (event.getParticipantLimit() == 0) {
-            requestState = RequestState.CONFIRMED;
-            checkEventStatus(event);
-        } else {
-            checkConflictRequest(event, user);
+        // Проверка на дублирование
+        if (requestRepository.existsByRequesterIdAndEventId(userId, eventId)) {
+            throw new ConflictException("Duplicate requests are not allowed");
         }
 
-        NewRequestDto newRequestDto = new NewRequestDto(user, event, requestState, LocalDateTime.now());
-        Request request = requestMapper.mapToRequest(newRequestDto);
-        log.debug("MAP request: {}", request);
+        // Проверка, что пользователь не инициатор
+        if (event.getInitiator().getId().equals(userId)) {
+            throw new ConflictException("Initiator cannot participate in own event");
+        }
+
+        // Проверка, что событие опубликовано
+        if (event.getState() != EventState.PUBLISHED) {
+            throw new ConflictException("Cannot participate in unpublished event");
+        }
+
+        // Проверка лимита участников
+        Integer confirmedCount = requestRepository.countByEventIdAndStatus(eventId, RequestState.CONFIRMED);
+        if (event.getParticipantLimit() > 0 && confirmedCount != null && confirmedCount >= event.getParticipantLimit()) {
+            throw new ConflictException("Participant limit reached");
+        }
+
+        // Определяем статус запроса
+        RequestState status = RequestState.PENDING;
+        if (!event.getRequestModeration() || event.getParticipantLimit() == 0) {
+            status = RequestState.CONFIRMED;
+        }
+
+        // Создаем запрос - БЕЗ БИЛДЕРА
+        Request request = new Request();
+        request.setRequester(user);
+        request.setEvent(event);
+        request.setStatus(status);
+        request.setCreated(LocalDateTime.now());
 
         Request savedRequest = requestRepository.save(request);
-        log.debug("SAVED request: {}", savedRequest);
+        log.info("CREATED request ID={} for event ID={}", savedRequest.getId(), eventId);
 
         return requestMapper.mapToRequestDto(savedRequest);
     }
@@ -79,175 +96,123 @@ public class RequestServiceImpl implements RequestService {
     @Override
     @Transactional
     public ParticipationRequestDto patchRequest(Long userId, Long requestId) {
-        log.info("PATCH cancel request ID={}", requestId);
+        log.info("PATCH cancel request ID={} by user ID={}", requestId, userId);
 
         checkUserExists(userId);
-        Request request = checkRequestExists(requestId);
-        checkConflictCancelRequest(request, userId);
+        Request request = requestRepository.findById(requestId)
+                .orElseThrow(() -> new NotFoundException("Request ID=" + requestId + " not found"));
+
+        // Проверка, что запрос принадлежит пользователю
+        if (!request.getRequester().getId().equals(userId)) {
+            throw new ConflictException("User cannot cancel another user's request");
+        }
+
+        // Проверка, что запрос еще не отменен
+        if (request.getStatus() == RequestState.CANCELED) {
+            throw new ConflictException("Request already canceled");
+        }
 
         request.setStatus(RequestState.CANCELED);
-        Request patchedRequest = requestRepository.save(request);
-        log.info("PATCH request: {}", patchedRequest);
+        Request updatedRequest = requestRepository.save(request);
+        log.info("CANCELED request ID={}", requestId);
 
-        return requestMapper.mapToRequestDto(request);
+        return requestMapper.mapToRequestDto(updatedRequest);
     }
 
+    @Override
     public List<ParticipationRequestDto> getEventRequests(Long userId, Long eventId) {
-        log.info("GET event ID={} requests", eventId);
+        log.info("GET requests for event ID={} by user ID={}", eventId, userId);
 
         checkUserExists(userId);
-        checkEventExists(eventId);
+        Event event = checkEventExists(eventId);
+
+        // Проверка, что пользователь - инициатор события
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new ConflictException("Only event initiator can view event requests");
+        }
 
         List<Request> requests = requestRepository.findByEventId(eventId);
-        log.info("FIND requests size={} requests", requests.size());
+        log.info("FOUND {} requests for event ID={}", requests.size(), eventId);
 
         return requests.stream()
                 .map(requestMapper::mapToRequestDto)
                 .toList();
     }
 
+    @Override
     @Transactional
     public List<ParticipationRequestDto> patchEventRequestsStatus(Long userId, Long eventId, RequestStatusUpdateDto statusUpdateDto) {
-        log.info("PATCH status requests ID={}", statusUpdateDto.getRequestIds());
+        log.info("PATCH status for requests: {}", statusUpdateDto.getRequestIds());
 
         checkUserExists(userId);
         Event event = checkEventExists(eventId);
+
+        // Проверка, что пользователь - инициатор события
+        if (!event.getInitiator().getId().equals(userId)) {
+            throw new ConflictException("Only event initiator can change request statuses");
+        }
+
+        // Получаем запросы
         List<Request> requests = requestRepository.findByIdIn(statusUpdateDto.getRequestIds());
-
         if (requests.isEmpty()) {
-            return List.of();
+            throw new NotFoundException("No requests found with provided IDs");
         }
 
-        checkRequestStatusForPatch(requests);
+        // Проверяем, что все запросы в статусе PENDING
+        for (Request request : requests) {
+            if (request.getStatus() != RequestState.PENDING) {
+                throw new ConflictException("Cannot change status: request ID=" + request.getId() + " is not in PENDING state");
+            }
+        }
 
-        Integer eventLimit = event.getParticipantLimit();
-        Integer eventConfirmRequests = checkEventLimit(event);
         RequestState newStatus = RequestState.valueOf(statusUpdateDto.getStatus());
+        List<ParticipationRequestDto> result = new ArrayList<>();
 
-        if (newStatus.equals(RequestState.REJECTED)) {
-            requests.forEach(request -> request.setStatus(newStatus));
-        }
-
-        if (newStatus.equals(RequestState.CONFIRMED)) {
-            requests.forEach(request -> request.setStatus(newStatus));
+        if (newStatus == RequestState.REJECTED) {
+            // Отклоняем все запросы
+            for (Request request : requests) {
+                request.setStatus(RequestState.REJECTED);
+                result.add(requestMapper.mapToRequestDto(requestRepository.save(request)));
+            }
+        } else if (newStatus == RequestState.CONFIRMED) {
+            // Подтверждаем с учетом лимита
+            Integer confirmedCount = requestRepository.countByEventIdAndStatus(eventId, RequestState.CONFIRMED);
+            int availableSlots = event.getParticipantLimit() - (confirmedCount != null ? confirmedCount : 0);
 
             if (event.getParticipantLimit() == 0) {
-                requests.forEach(request -> request.setStatus(newStatus));
-            } else {
-                int availableSlots = eventLimit - eventConfirmRequests;
-
+                // Если лимит 0 - подтверждаем все
                 for (Request request : requests) {
+                    request.setStatus(RequestState.CONFIRMED);
+                    result.add(requestMapper.mapToRequestDto(requestRepository.save(request)));
+                }
+            } else {
+                // Подтверждаем в пределах доступных слотов
+                for (int i = 0; i < requests.size(); i++) {
+                    Request request = requests.get(i);
                     if (availableSlots > 0) {
-                        request.setStatus(newStatus);
+                        request.setStatus(RequestState.CONFIRMED);
                         availableSlots--;
                     } else {
                         request.setStatus(RequestState.REJECTED);
                     }
+                    result.add(requestMapper.mapToRequestDto(requestRepository.save(request)));
                 }
             }
         }
 
-        List<ParticipationRequestDto> updatedRequests = requestRepository.saveAll(requests).stream()
-                .map(requestMapper::mapToRequestDto)
-                .toList();
-        log.info("UPDATED status requests ID={}", statusUpdateDto.getRequestIds());
-
-        return updatedRequests;
+        log.info("UPDATED {} requests with status {}", result.size(), newStatus);
+        return result;
     }
+
+    // === Вспомогательные методы ===
 
     private User checkUserExists(Long userId) {
         return userRepository.findById(userId)
-                .orElseThrow(() -> {
-                    log.error("User {} not found", userId);
-                    return new NotFoundException("User ID=" + userId + " not found");
-                });
-    }
-
-    private Request checkRequestExists(Long requestId) {
-        return requestRepository.findById(requestId)
-                .orElseThrow(() -> {
-                    log.error("Request {} not found", requestId);
-                    return new NotFoundException("Request ID=" + requestId + " not found");
-                });
+                .orElseThrow(() -> new NotFoundException("User ID=" + userId + " not found"));
     }
 
     private Event checkEventExists(Long eventId) {
         return eventRepository.findById(eventId)
-                .orElseThrow(() -> {
-                    log.error("Event {} not found", eventId);
-                    return new NotFoundException("Event ID=" + eventId + " not found");
-                });
-    }
-
-    private void checkConflictCancelRequest(Request request, Long userId) {
-        if (!Objects.equals(request.getRequester().getId(), userId)) {
-            log.error("User ID={} cannot canceled Request ID={}", userId, request.getId());
-            throw new ConflictException("This user cannot canceled request");
-        }
-    }
-
-    private void checkConflictRequest(Event event, User user) {
-        checkEventInitiator(user.getId(), event);
-        checkEventStatus(event);
-        checkEventLimit(event);
-    }
-
-    private void checkEventInitiator(Long userId, Event event) {
-        if (event.getInitiator().getId().equals(userId)) {
-            log.error("User ID={} initiator event ID={}", userId, event.getId());
-            throw new ConflictException("Initiator cannot participate in own event");
-        }
-    }
-
-    private void checkDoubleRequest(Long userId, Long eventId) {
-        Optional<Request> request = requestRepository.findByRequesterIdAndEventId(userId, eventId);
-
-        if (request.isPresent()) {
-            log.error("Try double request user ID={}, for event ID={}", userId, eventId);
-            throw new ConflictException("Duplicate requests are not allowed.");
-        }
-    }
-
-    private Integer checkEventLimit(Event event) {
-        Integer eventLimit = event.getParticipantLimit();
-
-        // Если лимит 0 - всегда можно участвовать
-        if (eventLimit == 0) {
-            return 0;
-        }
-
-        // Считаем ТОЛЬКО CONFIRMED запросы
-        List<RequestState> confirmedStatus = List.of(RequestState.CONFIRMED);
-        Integer confirmedCount = requestRepository.countByEventIdAndStatusIn(event.getId(), confirmedStatus);
-
-        // Если confirmedCount null, считаем 0
-        if (confirmedCount == null) {
-            confirmedCount = 0;
-        }
-
-        log.debug("Event ID={}: limit={}, confirmed={}", event.getId(), eventLimit, confirmedCount);
-
-        if (eventLimit != 0 && confirmedCount >= eventLimit) {
-            throw new ConflictException("Participant limit reached");
-        }
-
-        return confirmedCount;
-    }
-
-    private void checkEventStatus(Event event) {
-        if (event.getState() != EventState.PUBLISHED) {
-            log.error("Event ID={} unpublished", event.getId());
-            throw new ConflictException("Cannot participate in unpublished event");
-        }
-    }
-
-    private void checkRequestStatusForPatch(List<Request> requests) {
-        for (Request request : requests) {
-            if (!request.getStatus().equals(RequestState.PENDING)) {
-                log.error("Request ID={} none of the specified requests are in PENDING state", request.getId());
-                throw new ConflictException("Cannot change status: none of the specified requests are in PENDING state");
-            }
-        }
+                .orElseThrow(() -> new NotFoundException("Event ID=" + eventId + " not found"));
     }
 }
-
