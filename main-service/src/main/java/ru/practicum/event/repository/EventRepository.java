@@ -34,7 +34,7 @@ public interface EventRepository extends JpaRepository<Event, Long> {
                                          @Param("rangeEnd") LocalDateTime rangeEnd,
                                          Pageable pageable);
 
-    // ПРОСТОЙ метод без сложных параметров
+    // ПРОСТОЙ МЕТОД
     @Query("SELECT e FROM Event e WHERE e.state = 'PUBLISHED'")
     Page<Event> findAllPublished(Pageable pageable);
 }

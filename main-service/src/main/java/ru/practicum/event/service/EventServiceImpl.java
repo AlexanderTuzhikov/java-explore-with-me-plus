@@ -183,60 +183,38 @@ public class EventServiceImpl implements EventService {
 
     @Override
     public List<EventShortDto> getEventsByPublicFilters(PublicEventParams params, HttpServletRequest request) {
-        log.info("Getting events by public filters: text={}, categories={}, paid={}, rangeStart={}, rangeEnd={}",
-                params.getText(), params.getCategories(), params.getPaid(),
-                params.getRangeStart(), params.getRangeEnd());
+        log.info("Getting events by public filters");
 
         LocalDateTime rangeStart = params.getRangeStart() != null ? params.getRangeStart() : LocalDateTime.now();
 
         Sort sort = getSort(params.getSort());
         Pageable pageable = createPageable(params.getPageParams(), sort);
 
-        log.info("Pageable: from={}, size={}, sort={}", pageable.getOffset(), pageable.getPageSize(), sort);
+        // ПРОСТОЙ запрос без фильтров
+        Page<Event> events = eventRepository.findAllPublished(pageable);
 
-        // ПРОСТОЙ запрос - только опубликованные события
-        Page<Event> eventsPage = eventRepository.findAllPublished(pageable);
-        List<Event> allEvents = eventsPage.getContent();
-
-        log.info("Found {} published events total", allEvents.size());
-
-        if (allEvents.isEmpty()) {
-            log.info("No published events found");
-            return List.of();
-        }
-
-        // Фильтрация ВСЕГО в коде (безопасная версия)
-        List<Event> filteredEvents = allEvents.stream()
-                .filter(event -> {
-                    if (event == null) return false;
-                    return true;
-                })
-                .filter(event -> filterByText(event, params.getText()))
-                .filter(event -> filterByCategories(event, params.getCategories()))
-                .filter(event -> filterByPaid(event, params.getPaid()))
-                .filter(event -> filterByDateRange(event, rangeStart, params.getRangeEnd()))
+        // Фильтруем в коде
+        List<Event> filteredEvents = events.getContent().stream()
+                .filter(event -> params.getText() == null ||
+                        event.getAnnotation().toLowerCase().contains(params.getText().toLowerCase()) ||
+                        event.getDescription().toLowerCase().contains(params.getText().toLowerCase()))
+                .filter(event -> params.getCategories() == null || params.getCategories().isEmpty() ||
+                        params.getCategories().contains(event.getCategory().getId()))
+                .filter(event -> params.getPaid() == null || event.getPaid().equals(params.getPaid()))
+                .filter(event -> (rangeStart == null || !event.getEventDate().isBefore(rangeStart)) &&
+                        (params.getRangeEnd() == null || !event.getEventDate().isAfter(params.getRangeEnd())))
                 .collect(Collectors.toList());
-
-        log.info("After basic filtering: {} events", filteredEvents.size());
 
         // Фильтр по доступности
         filteredEvents = filterByAvailability(filteredEvents, params.getOnlyAvailable());
 
-        log.info("After availability filtering: {} events", filteredEvents.size());
-
         Map<Long, Long> views = getEventsViews(filteredEvents);
 
-        List<EventShortDto> result = filteredEvents.stream()
-                .map(event -> {
-                    Long viewsCount = views.getOrDefault(event.getId(), 0L);
-                    Long confirmed = getConfirmedRequests(event.getId());
-                    log.debug("Event ID={}: views={}, confirmed={}", event.getId(), viewsCount, confirmed);
-                    return eventMapper.toEventShortDto(event, viewsCount, confirmed);
-                })
+        return filteredEvents.stream()
+                .map(event -> eventMapper.toEventShortDto(event,
+                        views.getOrDefault(event.getId(), 0L),
+                        getConfirmedRequests(event.getId())))
                 .collect(Collectors.toList());
-
-        log.info("Returning {} events", result.size());
-        return result;
     }
 
     // Безопасные методы фильтрации с проверкой null
