@@ -70,33 +70,17 @@ public class ErrorHandler {
     }
 
     @ExceptionHandler(ru.practicum.handler.exception.ConflictException.class)
-    public ResponseEntity<Object> handleConflictException(final ru.practicum.handler.exception.ConflictException exception) {
-        log.error("=== CONFLICT EXCEPTION HANDLER ===");
-        log.error("Exception message: {}", exception.getMessage());
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ApiError handleConflictException(final ru.practicum.handler.exception.ConflictException exception) {
+        log.error("ConflictException: {}", exception.getMessage());
 
-        Object existingData = exception.getExistingData();
-
-        if (existingData != null) {
-            log.error("Returning existing data: {}", existingData);
-
-            // Вариант с HttpHeaders
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-            headers.set("X-Test-Info", "Conflict-handled");
-
-            return new ResponseEntity<>(existingData, headers, HttpStatus.CONFLICT);
-        }
-
-        log.error("No data, returning ApiError");
-        ApiError apiError = new ApiError(
+        return new ApiError(
                 getStackTrace(exception),
                 exception.getMessage(),
                 "For the requested operation the conditions are not met.",
                 HttpStatus.CONFLICT.toString(),
                 LocalDateTime.now().format(FORMATTER)
         );
-
-        return ResponseEntity.status(HttpStatus.CONFLICT).body(apiError);
     }
 
     @ExceptionHandler(MissingServletRequestParameterException.class)
