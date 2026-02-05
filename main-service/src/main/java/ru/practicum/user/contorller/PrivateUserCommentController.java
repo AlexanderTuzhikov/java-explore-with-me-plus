@@ -9,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.comment.dto.CommentFullDto;
-import ru.practicum.comment.dto.CommentShortDto;
 import ru.practicum.comment.dto.NewCommentDto;
 import ru.practicum.comment.dto.UpdateCommentDto;
 import ru.practicum.comment.service.CommentService;
@@ -18,7 +17,7 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/users/{userId}/")
+@RequestMapping("/users/{userId}")
 public class PrivateUserCommentController {
     private final CommentService commentService;
 
@@ -52,22 +51,21 @@ public class PrivateUserCommentController {
     }
 
     @GetMapping("/comment/{commentId}")
-    public ResponseEntity<CommentShortDto> getComment(
+    public ResponseEntity<CommentFullDto> getComment(
             @PathVariable Long userId,
             @PathVariable Long commentId) {
 
         return ResponseEntity.ok().body(commentService.getComment(userId, commentId));
     }
 
-    @GetMapping("/event/{eventId}")
-    public ResponseEntity<List<CommentShortDto>> getComments(
+    @GetMapping
+    public ResponseEntity<List<CommentFullDto>> getComments(
             @PathVariable Long userId,
-            @PathVariable Long eventId,
             @RequestParam(name = "from", defaultValue = "0") Integer from,
             @RequestParam(name = "size", defaultValue = "10") Integer size) {
 
-        Pageable pageable = PageRequest.of(from / size, size, Sort.by("id").ascending());
+        Pageable pageable = PageRequest.of(from / size, size, Sort.by("createdOn").descending());
 
-        return ResponseEntity.ok().body(commentService.getComments(userId, eventId, pageable));
+        return ResponseEntity.ok().body(commentService.getComments(userId, pageable));
     }
 }

@@ -7,7 +7,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.comment.dto.CommentFullDto;
-import ru.practicum.comment.dto.CommentShortDto;
 import ru.practicum.comment.dto.NewCommentDto;
 import ru.practicum.comment.dto.UpdateCommentDto;
 import ru.practicum.comment.mapper.CommentMapper;
@@ -15,6 +14,7 @@ import ru.practicum.comment.model.Comment;
 import ru.practicum.comment.model.CommentState;
 import ru.practicum.comment.repository.CommentRepository;
 import ru.practicum.event.model.Event;
+import ru.practicum.event.model.EventState;
 import ru.practicum.event.repository.EventRepository;
 import ru.practicum.handler.exception.ConflictException;
 import ru.practicum.handler.exception.NotFoundException;
@@ -41,6 +41,7 @@ public class CommentServiceImpl implements CommentService {
         log.info("POST comment user ID={} by event ID={}", userId, eventId);
         User user = checkUserExists(userId);
         Event event = checkEventExists(eventId);
+        checkEventStateForCommentAction(event);
 
         Comment comment = commentMapper.mapToComment(newCommentDto);
         comment.setAuthor(user);
@@ -61,6 +62,8 @@ public class CommentServiceImpl implements CommentService {
         User user = checkUserExists(userId);
         Comment comment = checkCommentExists(commentId);
         checkCommentAuthor(user, comment);
+        Event event = checkEventExists(comment.getEvent().getId());
+        checkEventStateForCommentAction(event);
 
         commentRepository.delete(comment);
         log.info("DELETE comment ID={}", commentId);
@@ -72,10 +75,17 @@ public class CommentServiceImpl implements CommentService {
         log.info("PATCH comment user ID={}, comment ID={}", userId, commentId);
         User user = checkUserExists(userId);
         Comment comment = checkCommentExists(commentId);
+        Event event = checkEventExists(comment.getEvent().getId());
+        checkEventStateForCommentAction(event);
         checkCommentAuthor(user, comment);
 
         commentMapper.updateCommentFromDto(updateCommentDto, comment);
         comment.setState(CommentState.PENDING);
+
+        if (comment.getPublishedOn() != null) {
+            comment.setPublishedOn(null);
+        }
+
         log.debug("PATCHED comment {}", comment);
 
         Comment updatedComment = commentRepository.save(comment);
@@ -85,27 +95,27 @@ public class CommentServiceImpl implements CommentService {
     }
 
     @Override
-    public CommentShortDto getComment(Long userId, Long commentId) {
+    public CommentFullDto getComment(Long userId, Long commentId) {
         log.info("GET comment ID={}", commentId);
-        checkUserExists(userId);
+        User user = checkUserExists(userId);
         Comment comment = checkCommentExists(commentId);
+        checkCommentAuthor(user, comment);
 
         log.debug("FIND comment {}", comment);
 
-        return commentMapper.mapToCommentShortDto(comment);
+        return commentMapper.mapToCommentFullDto(comment);
     }
 
     @Override
-    public List<CommentShortDto> getComments(Long userId, Long eventId, Pageable pageable) {
-        log.info("GET comments for event ID={}", eventId);
+    public List<CommentFullDto> getComments(Long userId, Pageable pageable) {
+        log.info("GET comments for user ID={}", userId);
         checkUserExists(userId);
-        checkEventExists(eventId);
 
-        Page<Comment> comments = commentRepository.findByEventId(eventId, pageable);
-        log.debug("FIND comments elements={} for event ID={}", comments.getTotalElements(), eventId);
+        Page<Comment> comments = commentRepository.findByAuthorId(userId, pageable);
+        log.debug("FIND comments elements={} for user ID={}", comments.getTotalElements(), userId);
 
         return comments.stream()
-                .map(commentMapper::mapToCommentShortDto)
+                .map(commentMapper::mapToCommentFullDto)
                 .toList();
     }
 
@@ -117,20 +127,25 @@ public class CommentServiceImpl implements CommentService {
                 });
     }
 
-    private Event checkEventExists(Long eventId) {
-        return eventRepository.findById(eventId)
-                .orElseThrow(() -> {
-                    log.error("Event {} not found", eventId);
-                    return new NotFoundException("Event ID=" + eventId + " not found");
-                });
-    }
-
     private Comment checkCommentExists(Long commentId) {
         return commentRepository.findById(commentId)
                 .orElseThrow(() -> {
                     log.error("Comment {} not found", commentId);
                     return new NotFoundException("Comment ID=" + commentId + " not found");
                 });
+    }
+
+    private Event checkEventExists(Long eventId) {
+
+        return eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event " + eventId + " not found"));
+    }
+
+    private void checkEventStateForCommentAction(Event event) {
+
+        if (event.getState().equals(EventState.PENDING) || event.getState().equals(EventState.CANCELED)) {
+            log.error("Event ID={} has state '{}' — comments are prohibited", event.getId(), event.getState());
+            throw new ConflictException("Unable to comment: event is pending review or cancelled");
+        }
     }
 
     private void checkCommentAuthor(User user, Comment comment) {
