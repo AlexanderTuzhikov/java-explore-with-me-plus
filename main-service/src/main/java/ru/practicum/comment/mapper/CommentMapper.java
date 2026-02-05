@@ -31,5 +31,11 @@ public interface CommentMapper {
     CommentShortDto mapToCommentShortDto(Comment comment);
 
     @Mapping(target = "comment", source = "comment")
+    @Mapping(target = "id", ignore = true)
+    @Mapping(target = "author", ignore = true)
+    @Mapping(target = "event", ignore = true)
+    @Mapping(target = "createdOn", ignore = true)
+    @Mapping(target = "state", ignore = true)
+    @Mapping(target = "publishedOn", ignore = true)
     void updateCommentFromDto(UpdateCommentDto updateCommentDto, @MappingTarget Comment comment);
 }
