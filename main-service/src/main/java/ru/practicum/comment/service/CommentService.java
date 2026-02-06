@@ -8,18 +8,26 @@ import java.util.List;
 public interface CommentService {
 
     CommentFullDto postComment(Long userId, Long eventId, NewCommentDto newCommentDto);
+
     void deleteComment(Long userId, Long commentId);
+
     CommentFullDto patchComment(Long userId, Long commentId, UpdateCommentDto updateCommentDto);
+
     CommentFullDto getComment(Long userId, Long commentId);
+
     List<CommentFullDto> getComments(Long userId, Pageable pageable);
 
     // Новые методы для админки
     CommentFullDto publishComment(Long commentId);
+
     CommentFullDto rejectComment(Long commentId);
+
     void deleteCommentByAdmin(Long commentId);
+
     List<CommentFullDto> searchComments(CommentSearchFilter filter, Pageable pageable);
 
     // Новые методы для публичного доступа
     List<CommentShortDto> getPublishedComments(Long eventId, Pageable pageable);
+
     CommentShortDto getPublishedComment(Long eventId, Long commentId);
 }
