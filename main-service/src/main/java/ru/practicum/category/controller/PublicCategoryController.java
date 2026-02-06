@@ -26,7 +26,8 @@ public class PublicCategoryController {
             @RequestParam(name = "from", defaultValue = "0") Integer from,
             @RequestParam(name = "size", defaultValue = "10") Integer size) throws BadRequestException {
 
-        Pageable pageable = PageRequest.of(from / size, size, Sort.by("id").descending());
+        int page = from / size;
+        Pageable pageable = PageRequest.of(page, size, Sort.by("id").ascending());
 
         try {
             return ResponseEntity.ok()

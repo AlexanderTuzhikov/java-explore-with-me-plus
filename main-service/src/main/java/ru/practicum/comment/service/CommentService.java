@@ -1,13 +1,12 @@
 package ru.practicum.comment.service;
 
 import org.springframework.data.domain.Pageable;
-import ru.practicum.comment.dto.CommentFullDto;
-import ru.practicum.comment.dto.NewCommentDto;
-import ru.practicum.comment.dto.UpdateCommentDto;
+import ru.practicum.comment.dto.*;
 
 import java.util.List;
 
 public interface CommentService {
+
     CommentFullDto postComment(Long userId, Long eventId, NewCommentDto newCommentDto);
 
     void deleteComment(Long userId, Long commentId);
@@ -17,4 +16,18 @@ public interface CommentService {
     CommentFullDto getComment(Long userId, Long commentId);
 
     List<CommentFullDto> getComments(Long userId, Pageable pageable);
+
+    // Новые методы для админки
+    CommentFullDto publishComment(Long commentId);
+
+    CommentFullDto rejectComment(Long commentId);
+
+    void deleteCommentByAdmin(Long commentId);
+
+    List<CommentFullDto> searchComments(CommentSearchFilter filter, Pageable pageable);
+
+    // Новые методы для публичного доступа
+    List<CommentShortDto> getPublishedComments(Long eventId, Pageable pageable);
+
+    CommentShortDto getPublishedComment(Long eventId, Long commentId);
 }
