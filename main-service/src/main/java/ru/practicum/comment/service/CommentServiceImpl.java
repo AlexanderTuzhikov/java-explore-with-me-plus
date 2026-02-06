@@ -6,9 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.comment.dto.CommentFullDto;
-import ru.practicum.comment.dto.NewCommentDto;
-import ru.practicum.comment.dto.UpdateCommentDto;
+import ru.practicum.comment.dto.*;
 import ru.practicum.comment.mapper.CommentMapper;
 import ru.practicum.comment.model.Comment;
 import ru.practicum.comment.model.CommentState;
@@ -35,6 +33,7 @@ public class CommentServiceImpl implements CommentService {
     private final EventRepository eventRepository;
     private final CommentMapper commentMapper;
 
+    // Существующие методы остаются без изменений
     @Transactional
     @Override
     public CommentFullDto postComment(Long userId, Long eventId, NewCommentDto newCommentDto) {
@@ -119,6 +118,131 @@ public class CommentServiceImpl implements CommentService {
                 .toList();
     }
 
+    // Новые методы для админки
+    @Transactional
+    @Override
+    public CommentFullDto publishComment(Long commentId) {
+        log.info("PUBLISH comment ID={}", commentId);
+        Comment comment = checkCommentExists(commentId);
+
+        if (!comment.getState().equals(CommentState.PENDING)) {
+            log.error("Comment ID={} is not in PENDING state. Current state: {}", commentId, comment.getState());
+            throw new ConflictException("Only comments in PENDING state can be published");
+        }
+
+        checkEventStateForCommentAction(comment.getEvent());
+
+        comment.setState(CommentState.PUBLISHED);
+        comment.setPublishedOn(LocalDateTime.now());
+
+        Comment publishedComment = commentRepository.save(comment);
+        log.debug("PUBLISHED comment {}", publishedComment);
+
+        return commentMapper.mapToCommentFullDto(publishedComment);
+    }
+
+    @Transactional
+    @Override
+    public CommentFullDto rejectComment(Long commentId) {
+        log.info("REJECT comment ID={}", commentId);
+        Comment comment = checkCommentExists(commentId);
+
+        if (!comment.getState().equals(CommentState.PENDING)) {
+            log.error("Comment ID={} is not in PENDING state. Current state: {}", commentId, comment.getState());
+            throw new ConflictException("Only comments in PENDING state can be rejected");
+        }
+
+        comment.setState(CommentState.REJECTED);
+
+        Comment rejectedComment = commentRepository.save(comment);
+        log.debug("REJECTED comment {}", rejectedComment);
+
+        return commentMapper.mapToCommentFullDto(rejectedComment);
+    }
+
+    @Transactional
+    @Override
+    public void deleteCommentByAdmin(Long commentId) {
+        log.info("DELETE comment by admin ID={}", commentId);
+        Comment comment = checkCommentExists(commentId);
+
+        commentRepository.delete(comment);
+        log.debug("DELETED comment by admin {}", comment);
+    }
+
+    @Override
+    public List<CommentFullDto> searchComments(CommentSearchFilter filter, Pageable pageable) {
+        log.info("SEARCH comments with filter: {}", filter);
+
+        Page<Comment> comments = commentRepository.searchComments(
+                filter.getUserIds(),
+                filter.getEventIds(),
+                filter.getStates(),
+                filter.getRangeStart(),
+                filter.getRangeEnd(),
+                pageable
+        );
+
+        log.debug("FOUND comments elements={}", comments.getTotalElements());
+
+        return comments.stream()
+                .map(commentMapper::mapToCommentFullDto)
+                .toList();
+    }
+
+    // Новые методы для публичного доступа
+    @Override
+    public List<CommentShortDto> getPublishedComments(Long eventId, Pageable pageable) {
+        log.info("GET published comments for event ID={}", eventId);
+        Event event = checkEventExists(eventId);
+
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            log.error("Event ID={} is not PUBLISHED. Current state: {}", eventId, event.getState());
+            throw new ConflictException("Comments can only be viewed for published events");
+        }
+
+        Page<Comment> comments = commentRepository.findByEventIdAndState(
+                eventId,
+                CommentState.PUBLISHED,
+                pageable
+        );
+
+        log.debug("FOUND published comments elements={} for event ID={}",
+                comments.getTotalElements(), eventId);
+
+        return comments.stream()
+                .map(commentMapper::mapToCommentShortDto)
+                .toList();
+    }
+
+    @Override
+    public CommentShortDto getPublishedComment(Long eventId, Long commentId) {
+        log.info("GET published comment ID={} for event ID={}", commentId, eventId);
+        Event event = checkEventExists(eventId);
+
+        if (!event.getState().equals(EventState.PUBLISHED)) {
+            log.error("Event ID={} is not PUBLISHED. Current state: {}", eventId, event.getState());
+            throw new ConflictException("Comments can only be viewed for published events");
+        }
+
+        Comment comment = checkCommentExists(commentId);
+
+        if (!comment.getState().equals(CommentState.PUBLISHED)) {
+            log.error("Comment ID={} is not PUBLISHED. Current state: {}", commentId, comment.getState());
+            throw new NotFoundException("Published comment not found");
+        }
+
+        if (!comment.getEvent().getId().equals(eventId)) {
+            log.error("Comment ID={} does not belong to event ID={}", commentId, eventId);
+            throw new ConflictException("Comment does not belong to specified event");
+        }
+
+        log.debug("FOUND published comment {}", comment);
+
+        return commentMapper.mapToCommentShortDto(comment);
+    }
+
+    // Вспомогательные методы (остаются без изменений)
     private User checkUserExists(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {
@@ -136,12 +260,11 @@ public class CommentServiceImpl implements CommentService {
     }
 
     private Event checkEventExists(Long eventId) {
-
-        return eventRepository.findById(eventId).orElseThrow(() -> new NotFoundException("Event " + eventId + " not found"));
+        return eventRepository.findById(eventId)
+                .orElseThrow(() -> new NotFoundException("Event " + eventId + " not found"));
     }
 
     private void checkEventStateForCommentAction(Event event) {
-
         if (event.getState().equals(EventState.PENDING) || event.getState().equals(EventState.CANCELED)) {
             log.error("Event ID={} has state '{}' — comments are prohibited", event.getId(), event.getState());
             throw new ConflictException("Unable to comment: event is pending review or cancelled");
@@ -150,9 +273,9 @@ public class CommentServiceImpl implements CommentService {
 
     private void checkCommentAuthor(User user, Comment comment) {
         if (!Objects.equals(comment.getAuthor().getId(), user.getId())) {
-            log.error("Conflict: Attempt to modify comment  by unauthorized user." +
+            log.error("Conflict: Attempt to modify comment by unauthorized user." +
                     "Expected author ID={}, Actual user ID={}", comment.getAuthor().getId(), user.getId());
-            throw new ConflictException("Conflict: Attempt to modify comment  by unauthorized user.");
+            throw new ConflictException("Conflict: Attempt to modify comment by unauthorized user.");
         }
     }
 }
