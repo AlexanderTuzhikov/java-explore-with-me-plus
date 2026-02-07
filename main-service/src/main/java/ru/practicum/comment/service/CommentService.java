@@ -17,7 +17,6 @@ public interface CommentService {
 
     List<CommentFullDto> getComments(Long userId, Pageable pageable);
 
-    // Новые методы для админки
     CommentFullDto publishComment(Long commentId);
 
     CommentFullDto rejectComment(Long commentId);
@@ -26,7 +25,6 @@ public interface CommentService {
 
     List<CommentFullDto> searchComments(CommentSearchFilter filter, Pageable pageable);
 
-    // Новые методы для публичного доступа
     List<CommentShortDto> getPublishedComments(Long eventId, Pageable pageable);
 
     CommentShortDto getPublishedComment(Long eventId, Long commentId);

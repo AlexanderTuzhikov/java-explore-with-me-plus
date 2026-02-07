@@ -22,25 +22,25 @@ import java.util.List;
 @AllArgsConstructor
 @RequestMapping(path = "/admin/comment")
 public class AdminCommentController {
-
     private final ru.practicum.comment.service.CommentService commentService;
 
     @PatchMapping("/{commentId}/publish")
-    public CommentFullDto publishComment(@PathVariable Long commentId) {
-        log.info("Admin publishing comment ID={}", commentId);
+    public CommentFullDto publishComment(
+            @PathVariable Long commentId) {
+
         return commentService.publishComment(commentId);
     }
 
     @PatchMapping("/{commentId}/reject")
-    public CommentFullDto rejectComment(@PathVariable Long commentId) {
-        log.info("Admin rejecting comment ID={}", commentId);
+    public CommentFullDto rejectComment(
+            @PathVariable Long commentId) {
         return commentService.rejectComment(commentId);
     }
 
     @DeleteMapping("/{commentId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCommentByAdmin(@PathVariable Long commentId) {
-        log.info("Admin deleting comment ID={}", commentId);
+
         commentService.deleteCommentByAdmin(commentId);
     }
 
@@ -53,9 +53,6 @@ public class AdminCommentController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime rangeEnd,
             @RequestParam(defaultValue = "0") int from,
             @RequestParam(defaultValue = "10") int size) {
-
-        log.info("Admin searching comments: userIds={}, eventIds={}, states={}, rangeStart={}, rangeEnd={}, from={}, size={}",
-                userIds, eventIds, states, rangeStart, rangeEnd, from, size);
 
         CommentSearchFilter filter = new CommentSearchFilter();
         filter.setUserIds(userIds);

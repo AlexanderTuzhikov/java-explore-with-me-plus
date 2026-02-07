@@ -33,7 +33,6 @@ public class CommentServiceImpl implements CommentService {
     private final EventRepository eventRepository;
     private final CommentMapper commentMapper;
 
-    // Существующие методы остаются без изменений
     @Transactional
     @Override
     public CommentFullDto postComment(Long userId, Long eventId, NewCommentDto newCommentDto) {
@@ -118,7 +117,6 @@ public class CommentServiceImpl implements CommentService {
                 .toList();
     }
 
-    // Новые методы для админки
     @Transactional
     @Override
     public CommentFullDto publishComment(Long commentId) {
@@ -190,7 +188,6 @@ public class CommentServiceImpl implements CommentService {
                 .toList();
     }
 
-    // Новые методы для публичного доступа
     @Override
     public List<CommentShortDto> getPublishedComments(Long eventId, Pageable pageable) {
         log.info("GET published comments for event ID={}", eventId);
@@ -242,7 +239,6 @@ public class CommentServiceImpl implements CommentService {
         return commentMapper.mapToCommentShortDto(comment);
     }
 
-    // Вспомогательные методы (остаются без изменений)
     private User checkUserExists(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> {

@@ -27,8 +27,6 @@ public class PublicCommentController {
             @RequestParam(defaultValue = "0") int from,
             @RequestParam(defaultValue = "10") int size) {
 
-        log.info("Getting published comments for event ID={}, from={}, size={}", eventId, from, size);
-
         Pageable pageable = PageRequest.of(from / size, size, Sort.by(Sort.Direction.DESC, "publishedOn"));
 
         return commentService.getPublishedComments(eventId, pageable);
@@ -38,8 +36,6 @@ public class PublicCommentController {
     public CommentShortDto getPublishedComment(
             @PathVariable Long eventId,
             @PathVariable Long commentId) {
-
-        log.info("Getting published comment ID={} for event ID={}", commentId, eventId);
 
         return commentService.getPublishedComment(eventId, commentId);
     }
