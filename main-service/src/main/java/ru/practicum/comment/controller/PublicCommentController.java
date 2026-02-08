@@ -18,7 +18,6 @@ import java.util.List;
 @AllArgsConstructor
 @RequestMapping(path = "/events/{eventId}/comments")
 public class PublicCommentController {
-
     private final CommentService commentService;
 
     @GetMapping

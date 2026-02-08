@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.comment.dto.CommentFullDto;
 import ru.practicum.comment.dto.CommentSearchFilter;
 import ru.practicum.comment.model.CommentState;
+import ru.practicum.comment.service.CommentService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -22,7 +23,7 @@ import java.util.List;
 @AllArgsConstructor
 @RequestMapping(path = "/admin/comment")
 public class AdminCommentController {
-    private final ru.practicum.comment.service.CommentService commentService;
+    private final CommentService commentService;
 
     @PatchMapping("/{commentId}/publish")
     public CommentFullDto publishComment(
