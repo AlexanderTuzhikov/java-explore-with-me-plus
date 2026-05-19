@@ -20,6 +20,7 @@ public interface EventMapper {
     @Mapping(target = "state", expression = "java(ru.practicum.event.model.EventState.PENDING)")
     @Mapping(target = "location", source = "newEventDto.location")
     @Mapping(target = "publishedOn", ignore = true)
+    @Mapping(target = "comments", ignore = true)
     Event toEvent(NewEventDto newEventDto, Category category, User user);
 
     @Mapping(target = "location", source = "event.location")

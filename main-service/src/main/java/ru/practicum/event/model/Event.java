@@ -5,9 +5,11 @@ import lombok.*;
 import ru.practicum.category.model.Category;
 import ru.practicum.location.model.LocationEntity;
 import ru.practicum.user.model.User;
+import ru.practicum.comment.model.Comment;
 
 import java.time.LocalDateTime;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -68,6 +70,10 @@ public class Event {
         Event event = (Event) object;
         return id != 0 && id.equals(event.id);
     }
+
+    @OneToMany(mappedBy = "event", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @ToString.Exclude
+    private Set<Comment> comments;
 
     @Override
     public int hashCode() {
