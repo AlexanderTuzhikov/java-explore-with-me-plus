@@ -1,12 +1,13 @@
-package ru.practicum.statservice;
+package ru.practicum;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.config.server.EnableConfigServer;
 
+@EnableConfigServer
 @SpringBootApplication
-public class StatServiceApplication {
+public class ConfigServer {
     public static void main(String[] args) {
-        SpringApplication.run(StatServiceApplication.class, args);
-        System.out.println("STAT-SERVICE RUNNING");
+        SpringApplication.run(ConfigServer.class, args);
     }
 }

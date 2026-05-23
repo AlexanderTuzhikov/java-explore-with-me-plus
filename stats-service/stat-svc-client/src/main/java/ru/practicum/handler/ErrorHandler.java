@@ -18,6 +18,5 @@ public class ErrorHandler {
         log.error("Внутренняя ошибка сервера: ", ex);
         return new ApiError(LocalDateTime.now(), HttpStatus.SERVICE_UNAVAILABLE.value(),
                 "Stats Service Unavailable", ex.getMessage());
-
     }
 }
