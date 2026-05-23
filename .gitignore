@@ -2,7 +2,7 @@
 *.db
 *.mv.db
 *.trace.db
-main-service/data/
+core/main-service/data/
 stats-service/stat-svc-service/data/
 
 # Java

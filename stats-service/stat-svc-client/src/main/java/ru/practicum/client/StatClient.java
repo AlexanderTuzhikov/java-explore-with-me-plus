@@ -2,26 +2,32 @@ package ru.practicum.client;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.util.UriComponentsBuilder;
 import ru.practicum.dto.NewEndpointHitDto;
 import ru.practicum.dto.ViewStatsDto;
 
+import java.net.URI;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
 public class StatClient {
+    private final Function<String, URI> uriFactory;
     private final RestClient restClient;
-    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter FORMATTER =
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME;
 
-    public StatClient(String baseUrl) {
-        this.restClient = RestClient.create(baseUrl);
+    public StatClient(Function<String, URI> uriFactory) {
+        this.uriFactory = uriFactory;
+        this.restClient = RestClient.create();
     }
 
     public void saveHit(NewEndpointHitDto hitDto) {
         try {
             ResponseEntity<Void> response = restClient.post()
-                    .uri("/hit")
+                    .uri(uriFactory.apply("/hit"))
                     .body(hitDto)
                     .retrieve()
                     .toBodilessEntity();
@@ -40,19 +46,23 @@ public class StatClient {
             String startStr = start.format(FORMATTER);
             String endStr = end.format(FORMATTER);
 
+            URI uri = UriComponentsBuilder
+                    .fromUri(uriFactory.apply("/stats"))
+                    .queryParam("start", startStr)
+                    .queryParam("end", endStr)
+                    .queryParam("unique", unique)
+                    .build()
+                    .toUri();
+
+            if (uris != null && !uris.isEmpty()) {
+                uri = UriComponentsBuilder.fromUri(uri)
+                        .queryParam("uris", String.join(",", uris))
+                        .build()
+                        .toUri();
+            }
+
             ResponseEntity<ViewStatsDto[]> response = restClient.get()
-                    .uri(uriBuilder -> {
-                        uriBuilder.path("/stats")
-                                .queryParam("start", startStr)
-                                .queryParam("end", endStr)
-                                .queryParam("unique", unique);
-
-                        if (uris != null && !uris.isEmpty()) {
-                            uriBuilder.queryParam("uris", String.join(",", uris));
-                        }
-
-                        return uriBuilder.build();
-                    })
+                    .uri(uri)
                     .retrieve()
                     .toEntity(ViewStatsDto[].class);
 

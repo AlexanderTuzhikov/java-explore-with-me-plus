@@ -10,8 +10,6 @@ import ru.practicum.statservice.model.EndpointHit;
 import ru.practicum.statservice.repository.StatRepository;
 
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.Collections;
 import java.util.List;
 
 @Service
@@ -21,9 +19,6 @@ public class StatServiceImpl implements StatService {
     private final StatRepository repository;
     private final EndpointHitMapper mapper;
 
-    private static final DateTimeFormatter FORMATTER =
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     @Override
     @Transactional
     public void saveHit(NewEndpointHitDto hitDto) {
@@ -32,35 +27,22 @@ public class StatServiceImpl implements StatService {
     }
 
     @Override
-    public List<ViewStatsDto> getStats(String start, String end,
-                                       List<String> uris, boolean unique) {
+    public List<ViewStatsDto> getStats(LocalDateTime start, LocalDateTime end, List<String> uris,
+                                       boolean unique) {
+        if (uris == null || uris.isEmpty()) {
 
-        try {
-            // Конвертируем строки в LocalDateTime
-            LocalDateTime startTime = LocalDateTime.parse(start, FORMATTER);
-            LocalDateTime endTime = LocalDateTime.parse(end, FORMATTER);
-
-            // Вызываем соответствующие методы репозитория
-            if (uris == null || uris.isEmpty()) {
-                // Все URI
-                if (unique) {
-                    return repository.findUniqueHitsAll(startTime, endTime);
-                } else {
-                    return repository.findAllHitsAll(startTime, endTime);
-                }
+            if (unique) {
+                return repository.findUniqueHitsAll(start, end);
             } else {
-                // Только указанные URI
-                if (unique) {
-                    return repository.findUniqueHitsByUris(startTime, endTime, uris);
-                } else {
-                    return repository.findAllHitsByUris(startTime, endTime, uris);
-                }
+                return repository.findAllHitsAll(start, end);
             }
+        } else {
 
-        } catch (Exception e) {
-            // Логируем ошибку и возвращаем пустой список
-            // В продакшене нужно обрабатывать ошибки лучше
-            return Collections.emptyList();
+            if (unique) {
+                return repository.findUniqueHitsByUris(start, end, uris);
+            } else {
+                return repository.findAllHitsByUris(start, end, uris);
+            }
         }
     }
 }
